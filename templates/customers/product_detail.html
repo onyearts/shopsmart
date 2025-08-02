@@ -1,0 +1,380 @@
+{% extends 'customers/base.html' %}
+{% load static %}
+{% block title %}{{ product.name }} - ShopSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'customers:product_list' %}">Products</a></li>
+            <li class="breadcrumb-item"><a href="#">{{ product.shop_owner.shop_name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0 position-relative">
+                    <img src="{{ product.image.url }}" class="img-fluid rounded-3 main-product-image" alt="{{ product.name }}" id="mainProductImage">
+                    {% if product.stock < 5 %}
+                    <span class="badge bg-danger position-absolute top-0 end-0 m-3">Low Stock</span>
+                    {% endif %}
+                    {% if product.is_active == False %}
+                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                        <span class="badge bg-secondary fs-5">Currently Unavailable</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-center gap-2">
+                        <img src="{{ product.image.url }}" class="img-thumbnail product-thumbnail active" style="width: 80px; height: 80px; object-fit: cover;" alt="Thumbnail" data-main-image="{{ product.image.url }}">
+                        <!-- Additional thumbnails would go here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <!-- Title and Shop Info -->
+                    <h1 style="text-transform: capitalize;" class="h3 mb-2">{{ product.name }}</h1>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-store-alt text-muted me-2"></i>
+                        <a href="#" class="text-decoration-none">
+                            <span class="fw-semibold">{{ product.shop_owner.shop_name }}</span>
+                        </a>
+                        <span class="mx-2 text-muted">|</span>
+                        <i class="fas fa-map-marker-alt text-muted me-1"></i>
+                        <span class="text-muted">{{ product.shop_owner.city }}</span>
+                    </div>
+
+                    <!-- Price and Stock -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="text-primary mb-0">GH₵ {{ product.price|floatformat:2 }}</h2>
+                            {% if product.discount_price %}
+                            <small class="text-danger"><del>GH₵ {{ product.original_price|floatformat:2 }}</del> {{ product.discount_percentage }}% off</small>
+                            {% endif %}
+                        </div>
+                        <span class="badge {% if product.stock > 0 and product.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                            {% if product.stock > 0 and product.is_active %}In Stock ({{ product.stock }}){% else %}Out of Stock{% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4 flex-grow-1">
+                        <h5 class="mb-2">Description</h5>
+                        <p class="text-muted">{{ product.description|linebreaks }}</p>
+                        {% if product.extra_note %}
+                        <div class="alert alert-info mt-3">
+                            <h6><i class="fas fa-info-circle me-2"></i>Note from Seller</h6>
+                            <p class="mb-0 small">{{ product.extra_note }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 mt-auto">
+                        {% if product.stock > 0 and product.is_active %}
+                        <button class="btn btn-primary flex-grow-1 add-to-cart" data-product-id="{{ product.id }}">
+                            <i class="fas fa-shopping-cart me-2"></i> Contact Shop Owner
+                        </button>
+                        {% else %}
+                        <button class="btn btn-secondary flex-grow-1" disabled>
+                            <i class="fas fa-ban me-2"></i> Not Available
+                        </button>
+                        {% endif %}
+                        
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-outline-danger add-wishlist" data-product-id="{{ product.id }}">
+                           <i class="{% if product.id in wishlist_product_ids %}fas{% else %}far{% endif %} fa-heart"></i>
+                        </button>
+
+
+                        {% else %}
+                        <a href="{% url 'accounts:login' %}?next={% url 'customers:product_detail' product.id %}" class="btn btn-outline-danger">
+                            <i class="far fa-heart"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Sections -->
+    <div class="row mt-4">
+        <!-- Shop Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-store me-2"></i> About {{ product.shop_owner.shop_name }}
+                    </h5>
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0">
+                            <img src="{{ product.shop_owner.user.profile_picture.url }}" 
+                                 class="rounded-circle border" 
+                                 width="60" 
+                                 height="60" 
+                                 alt="Shop Owner"
+                                 onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">{{ product.shop_owner.user.get_full_name }}</h6>
+                            <p class="text-muted small mb-1">
+                                <i class="fas fa-map-marker-alt me-1"></i> 
+                                {{ product.shop_owner.address }}, {{ product.shop_owner.city }}
+                            </p>
+                            <div class="d-flex small">
+                                <span class="me-3"><i class="fas fa-star text-warning me-1"></i> {{ product.shop_owner.average_rating|default:"4.8" }} ({{ product.shop_owner.review_count|default:"120" }})</span>
+                                <span><i class="fas fa-box-open me-1"></i> {{ product.shop_owner.product_count|default:"45" }} Products</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-store me-1"></i> Visit Shop
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#contactShopModal">
+                            <i class="fas fa-envelope me-1"></i> Contact
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Customer Reviews -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i> Customer Reviews
+                    </h5>
+                    {% if user.is_authenticated %}
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                            Write Review
+                        </button>
+                    {% endif %}
+                </div>
+
+                {% if product.reviews.exists %}
+                    {% for review in product.reviews.all|slice:":3" %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                {% with review.user.customerprofile.profile_picture.url as profile_url %}
+                                    <img src="{{ profile_url }}" alt="Profile" class="rounded-circle me-2" width="40" height="40">
+                                {% endwith %}
+                                <div>
+                                    <span class="fw-semibold">{{ review.user.get_full_name }}</span>
+                                    <div class="small text-warning">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="fas fa-star"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ review.created_at|timesince }} ago</small>
+                        </div>
+                        <p class="mb-0">{{ review.comment }}</p>
+                    </div>
+                    {% endfor %}
+
+                    {% if product.reviews.count > 3 %}
+                    <div class="text-center mt-3">
+                        <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#allReviewsModal">
+                            View all {{ product.reviews.count }} reviews
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No reviews yet</p>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                            Be the first to review
+                        </button>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Write Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{% url 'customers:submit_review' product.id %}">
+                {% csrf_token %}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reviewModalLabel">Write a Review</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="id_rating" class="form-label">Rating (1–5)</label>
+                            <input type="number" name="rating" min="1" max="5" class="form-control" id="id_rating" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_comment" class="form-label">Comment</label>
+                            <textarea name="comment" class="form-control" id="id_comment" rows="4" placeholder="Write your review here..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="row mt-2">
+        <div class="col-12">
+            <h4 class="mb-4">You may also like</h4>
+            <div class="row">
+                {% for related_product in related_products %}
+                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                    {% include 'customers/includes/product_card.html' with product=related_product %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="contactShopModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contact {{ product.shop_owner.shop_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="contactShopForm">
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'success') {
+    const toastEl = document.getElementById('toastMessage');
+    const toastBody = document.getElementById('toastBody');
+    toastBody.textContent = message;
+
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
+
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
+
+document.querySelectorAll('.add-wishlist').forEach(btn => {
+    btn.addEventListener('click', async function () {
+        const icon = this.querySelector('i');
+        const pid = this.dataset.productId;
+
+        try {
+            const res = await fetch("{% url 'customers:add_wishlist' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ product_id: pid }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                showToast(data.message, 'success');
+                icon.classList.toggle('far');
+                icon.classList.toggle('fas');
+            } else {
+                throw new Error(data.error || 'Error updating wishlist');
+            }
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    });
+});
+</script>
+
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+  <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastBody">Success message</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<style>
+    .product-image {
+        max-height: 500px;
+        object-fit: contain;
+    }
+    .img-thumbnail {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .img-thumbnail:hover {
+        border-color: #0d6efd;
+        transform: scale(1.05);
+    }
+    .product-thumbnail.active {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+    }
+</style>
+{% endblock %}

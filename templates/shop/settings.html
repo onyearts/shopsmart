@@ -1,0 +1,48 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title"><i class="mdi mdi-cog-outline me-2"></i>Settings</h4>
+    <p class="card-description"> Manage your preferences </p>
+
+    <form method="POST" action="#">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="email_notifications">Email Notifications</label>
+        <select id="email_notifications" class="form-select">
+          <option selected>Enable</option>
+          <option>Disable</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="theme_mode">Theme</label>
+        <select id="theme_mode" class="form-select">
+          <option>Light</option>
+          <option>Dark</option>
+        </select>
+      </div>
+
+        <div class="form-group">
+            <label for="language">Language</label>
+            <select id="language" class="form-select">
+            <option selected>English</option>
+            <option>Spanish</option>
+            <option>French</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-primary">Change Password</a>
+        </div>
+
+
+      <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+      <a href="{% url 'shops:dashboard' %}" class="btn btn-light">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

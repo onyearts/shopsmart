@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block title %}Login - ShopSmart{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+        <div class="text-center mb-4">
+          <h2 class="fw-bold">Login to Your Account</h2>
+          <p class="text-muted">Enter your credentials to access your dashboard</p>
+        </div>
+
+        <!-- Message/Alerts Container at Top of Form -->
+        <div id="form-messages">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show">
+              {{ form.non_field_errors }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endif %}
+        </div>
+
+        <form id="login-form" method="POST">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            {{ form.email.label_tag }}
+            <input type="email" name="{{ form.email.name }}" class="form-control rounded-3" id="{{ form.email.id_for_label }}" required>
+            {% if form.email.errors %}
+              <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3 position-relative">
+            {{ form.password.label_tag }}
+            <div class="input-group">
+              <input type="password" name="{{ form.password.name }}" class="form-control rounded-3" id="{{ form.password.id_for_label }}" required>
+              <button class="btn btn-outline-secondary toggle-password" type="button" tabindex="-1">
+                <i class="bi bi-eye-slash" id="toggleIcon"></i>
+              </button>
+            </div>
+            {% if form.password.errors %}
+              <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Login
+          </button>
+
+          <div class="text-center mt-4">
+            <p class="text-muted">Don't have an account?
+              <a href="{% url 'accounts:register_customer' %}">Register as Customer</a> |
+              <a href="{% url 'accounts:register_shop_owner' %}">Shop Owner</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // AJAX form submission with message display at top
+  $(document).ready(function() {
+    $('#login-form').on('submit', function(e) {
+      e.preventDefault();
+      
+      // Clear previous messages
+      $('#form-messages').empty();
+      
+      $.ajax({
+        type: 'POST',
+        url: $(this).attr('action') || window.location.href,
+        data: $(this).serialize(),
+        success: function(response) {
+          // Show success message at top
+          $('#form-messages').html(`
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              ${response.message || 'Login successful! Redirecting...'}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          `);
+          
+          setTimeout(() => {
+            window.location.href = response.redirect_url;
+          }, 1500);
+        },
+        error: function(xhr) {
+          let errorMsg = 'Invalid email or password.';
+          if (xhr.status === 403) {
+            errorMsg = xhr.responseJSON.error || 'Your account is not yet approved by admin.';
+          }
+          
+          // Show error message at top
+          $('#form-messages').html(`
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              ${errorMsg}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          `);
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

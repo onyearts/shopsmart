@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      {% block title %}Shop Smart - Find Local Price List{% endblock %}
+    </title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link href="{% static 'assets1/vendors/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets1/vendors/bootstrap-icons/font/bootstrap-icons.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets1/vendors/glightbox/glightbox.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets1/vendors/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets1/vendors/aos/aos.css' %}" rel="stylesheet">
+    <link href="{% static 'assets1/css/style.css' %}" rel="stylesheet">
+
+    <!-- Theme Script -->
+    <script>
+      (function() {
+        const storedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', storedTheme);
+      })();
+    </script>
+    
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <div class="site-wrap">
+      <!-- Header -->
+      <header class="fbs__net-navbar navbar navbar-expand-lg dark" aria-label="freebootstrap.net navbar">
+        <div class="container d-flex align-items-center justify-content-between">
+          <!-- Logo -->
+          <a class="navbar-brand w-auto" href="{% url 'landing:index' %}">
+            <img class="logo dark img-fluid" src="{% static 'assets1/images/logo-dark.svg' %}" alt="Shop Smart Logo">
+            <img class="logo light img-fluid" src="{% static 'assets1/images/logo-light.svg' %}" alt="Shop Smart Logo">
+          </a>
+
+          <!-- Mobile Menu -->
+          <div class="offcanvas offcanvas-start w-75" id="fbs__net-navbars" tabindex="-1" aria-labelledby="fbs__net-navbarsLabel">
+            <div class="offcanvas-header">
+              <div class="offcanvas-header-logo">
+                <a class="logo-link" id="fbs__net-navbarsLabel" href="{% url 'landing:index' %}">
+                  <img class="logo dark img-fluid" src="{% static 'assets1/images/logo-dark.svg' %}" alt="Shop Smart Logo">
+                  <img class="logo light img-fluid" src="{% static 'assets1/images/logo-light.svg' %}" alt="Shop Smart Logo">
+                </a>
+              </div>
+              <button class="btn-close btn-close-black" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+
+            <div class="offcanvas-body align-items-lg-center">
+              <ul class="navbar-nav nav me-auto ps-lg-5 mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link scroll-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" 
+                     href="{% url 'landing:index' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link scroll-link" href="#about">About</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link scroll-link" href="#pricing">Pricing</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link scroll-link" href="#how-it-works">How It Works</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link scroll-link" href="#services">Services</a>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                    Dropdown <i class="bi bi-chevron-down"></i>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a class="nav-link scroll-link dropdown-item" href="#">Multipages</a></li>
+                    <li><a class="nav-link scroll-link dropdown-item" href="#services">Services</a></li>
+                    <li><a class="nav-link scroll-link dropdown-item" href="#pricing">Pricing</a></li>
+                  </ul>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link scroll-link" href="#contact">Contact</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Auth Buttons -->
+          <div class="ms-auto w-auto">
+            <div class="header-social d-flex align-items-center gap-2">
+              <a class="btn btn-secondary py-2" href="{% url 'accounts:login' %}">Login</a>
+              <a class="btn btn-primary py-2" href="{% url 'accounts:register_customer' %}">Signup</a>
+              <button class="fbs__net-navbar-toggler justify-content-center align-items-center ms-auto"
+                      data-bs-toggle="offcanvas" data-bs-target="#fbs__net-navbars"
+                      aria-controls="fbs__net-navbars" aria-label="Toggle navigation">
+                <svg class="fbs__net-icon-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="21" x2="3" y1="6" y2="6"></line>
+                  <line x1="15" x2="3" y1="12" y2="12"></line>
+                  <line x1="17" x2="3" y1="18" y2="18"></line>
+                </svg>
+                <svg class="fbs__net-icon-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18"></path>
+                  <path d="m6 6 12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content" style="padding-top: 80px;">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'assets1/vendors/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets1/vendors/gsap/gsap.min.js' %}"></script>
+    <script src="{% static 'assets1/vendors/glightbox/glightbox.min.js' %}"></script>
+    <script src="{% static 'assets1/vendors/swiper/swiper-bundle.min.js' %}"></script>
+    <script src="{% static 'assets1/vendors/aos/aos.js' %}"></script>
+    <script src="{% static 'assets1/js/custom.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

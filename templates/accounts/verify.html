@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verify Your Email - ShopSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5 text-center">
+
+        <div class="mb-4">
+          <img src="{% static 'images/verify-icon.png' %}" alt="Verify Icon" style="width: 80px;">
+        </div>
+
+        <h2 class="mb-3 fw-bold">Verify Your Email</h2>
+        <p class="lead text-muted mb-4">
+          We've sent a 6-digit code to <strong>{{ email }}</strong>.
+          <br>Code expires in <span id="countdown">15:00</span> minutes.
+        </p>
+
+        <form method="POST" id="verification-form" class="px-2">
+          {% csrf_token %}
+          <input type="hidden" name="email" value="{{ email }}">
+
+          <div class="mb-4">
+            <label for="code" class="form-label visually-hidden">Verification Code</label>
+            <div class="d-flex justify-content-center gap-2" id="code-inputs">
+              {% for i in "123456" %}
+              <input 
+                type="text" 
+                name="code_{{i}}" 
+                id="code-{{i}}" 
+                class="form-control verification-digit text-center" 
+                maxlength="1" 
+                inputmode="numeric"
+                pattern="\d"
+                autocomplete="one-time-code"
+                {% if forloop.first %}autofocus{% endif %}>
+              {% endfor %}
+              <input type="hidden" name="code" id="code">
+            </div>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-check-circle me-2"></i>Verify Account
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center mt-4">
+          <p class="text-muted mb-2" id="resend-container">
+            <p id="resend-success" class="text-success fw-semibold" style="display: none;"></p>
+            <p id="resend-error" class="text-danger fw-semibold" style="display: none;"></p>
+            Didn't get the code? 
+            <a href="#" id="resend-code-link">Resend Code</a>
+            <span id="resend-timer" class="d-none">(<span id="timer">60</span>s)</span>
+          </p>
+          
+        </div>
+
+        <div class="mt-4">
+          <small class="text-muted">Need help? <a href="#">Contact support</a></small>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Verification code input styling */
+  .verification-digit {
+    width: 3rem;
+    height: 4rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .verification-digit:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    transform: translateY(-2px);
+  }
+  
+  .verification-digit:not(:placeholder-shown) {
+    border-color: #198754;
+    background-color: rgba(25, 135, 84, 0.05);
+  }
+  
+  #countdown {
+    color: #dc3545;
+    font-weight: 600;
+  }
+  
+  #resend-timer {
+    color: #6c757d;
+    font-size: 0.9em;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const email = "{{ email }}";
+    const csrfToken = '{{ csrf_token }}';
+    const resendLink = document.getElementById('resend-code-link');
+    const resendTimer = document.getElementById('resend-timer');
+    const timerDisplay = document.getElementById('timer');
+    const digits = document.querySelectorAll('.verification-digit');
+    const hiddenCodeInput = document.getElementById('code');
+    const verificationForm = document.getElementById('verification-form');
+    const errorDisplay = document.getElementById('resend-error');
+    let canResend = true;
+    let countdownInterval;
+    let resendCountdown = 60;
+
+    // Start the initial countdown (15 minutes)
+    startCountdown(15 * 60, 'countdown');
+
+    // Verification code input handling
+    digits.forEach((digit, index) => {
+      digit.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+        
+        if (this.value.length === 1) {
+          if (index < digits.length - 1) {
+            digits[index + 1].focus();
+          } else {
+            compileCode();
+            submitVerification();
+          }
+        }
+      });
+      
+      digit.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value === '' && index > 0) {
+          digits[index - 1].focus();
+        }
+      });
+      
+      digit.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pasteData = e.clipboardData.getData('text').replace(/\D/g, '');
+        if (pasteData.length === 6) {
+          digits.forEach((d, i) => {
+            d.value = pasteData[i] || '';
+          });
+          compileCode();
+          submitVerification();
+        }
+      });
+    });
+
+    function compileCode() {
+      hiddenCodeInput.value = Array.from(digits).map(d => d.value).join('');
+    }
+
+    function submitVerification() {
+    compileCode(); // Ensure code is compiled before submission
+    
+    const formData = new FormData(verificationForm);
+    const code = hiddenCodeInput.value;
+    
+    // Show loading state
+    errorDisplay.style.display = 'none';
+    verificationForm.querySelector('button').disabled = true;
+    verificationForm.querySelector('button').innerHTML = 
+        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Verifying...';
+
+    // Create proper form data
+    const data = new URLSearchParams();
+    data.append('code', code);
+    data.append('email', email);
+    data.append('csrfmiddlewaretoken', csrfToken);
+
+    fetch("{% url 'accounts:verify' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": csrfToken,
+            "X-Requested-With": "XMLHttpRequest"
+        },
+        body: data
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else if (data && data.error) {
+            throw new Error(data.error);
+        }
+    })
+    .catch(error => {
+        errorDisplay.textContent = error.message || 'Invalid or expired verification code.';
+        errorDisplay.style.display = 'block';
+        digits.forEach(d => d.value = '');
+        digits[0].focus();
+    })
+    .finally(() => {
+        verificationForm.querySelector('button').disabled = false;
+        verificationForm.querySelector('button').innerHTML = 
+            '<i class="bi bi-check-circle me-2"></i>Verify Account';
+    });
+}
+
+
+
+    // Resend code functionality
+    resendLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (!canResend) return;
+      
+      fetch("{% url 'accounts:resend_code' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRFToken": csrfToken,
+        },
+        body: `email=${encodeURIComponent(email)}`,
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message) {
+          showResendFeedback(data.message, 'success');
+          startResendTimer();
+          // Reset countdown
+          clearInterval(countdownInterval);
+          startCountdown(15 * 60, 'countdown');
+        } else if (data.error) {
+          showResendFeedback(data.error, 'error');
+        }
+      })
+      .catch(error => {
+        showResendFeedback("An error occurred. Try again.", 'error');
+      });
+    });
+
+    function showResendFeedback(message, type) {
+      const successEl = document.getElementById('resend-success');
+      const errorEl = document.getElementById('resend-error');
+      
+      if (type === 'success') {
+        successEl.textContent = message;
+        successEl.style.display = 'block';
+        errorEl.style.display = 'none';
+      } else {
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        successEl.style.display = 'none';
+      }
+      
+      setTimeout(() => {
+        successEl.style.display = 'none';
+        errorEl.style.display = 'none';
+      }, 5000);
+    }
+
+    function startResendTimer() {
+      canResend = false;
+      resendLink.style.pointerEvents = 'none';
+      resendLink.style.opacity = '0.5';
+      resendTimer.classList.remove('d-none');
+      resendCountdown = 60;
+      timerDisplay.textContent = resendCountdown;
+      
+      const timer = setInterval(() => {
+        resendCountdown--;
+        timerDisplay.textContent = resendCountdown;
+        
+        if (resendCountdown <= 0) {
+          clearInterval(timer);
+          canResend = true;
+          resendLink.style.pointerEvents = 'auto';
+          resendLink.style.opacity = '1';
+          resendTimer.classList.add('d-none');
+        }
+      }, 1000);
+    }
+
+    function startCountdown(seconds, elementId) {
+      const element = document.getElementById(elementId);
+      let remaining = seconds;
+      
+      clearInterval(countdownInterval); // Clear any existing timer
+      
+      countdownInterval = setInterval(() => {
+        const minutes = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        element.textContent = `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          element.textContent = "expired";
+          // Optionally disable verification here
+        } else {
+          remaining--;
+        }
+      }, 1000);
+    }
+  });
+</script>
+{% endblock %}

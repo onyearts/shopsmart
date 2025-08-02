@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Verified Successfully - ShopSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5 text-center">
+        <div class="mb-4">
+          <img src="{% static 'images/success-icon.jpeg' %}" alt="Success" style="width: 100px; height: 100px;">
+        </div>
+        <h2 class="mb-3 fw-bold">
+          {% if show_login %}Account Verified!{% else %}Account Created!{% endif %}
+        </h2>
+        <p class="lead mb-4">
+          {{ message }}
+        </p>
+
+        {% if show_login %}
+        <div class="d-grid">
+          <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Login to Your Account
+          </a>
+        </div>
+        {% else %}
+        <div class="d-grid">
+          <a href="{% url 'landing:index' %}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house me-2"></i> Return to Home
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

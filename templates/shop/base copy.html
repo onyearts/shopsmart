@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'shop/includes/head.html' %}
+    {% block extra_css %}{% endblock %}
+
+</head>
+<body>
+    <div class="container-scroller">
+        {% include 'shop/includes/header.html' %}
+            {% include 'shop/includes/sidebar.html' %}
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    {% block content %}{% endblock %}
+                </div>
+                {% include 'shop/includes/footer.html' %}
+            </div>
+    </div>
+    {% include 'shop/includes/scripts.html' %}
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // In your base template or a JS file
+        $(document).ready(function() {
+            // Remove active class from all items first
+            $('.nav-item').removeClass('active');
+            
+            // Add active class to current item
+            $('.nav-item a[href="'+window.location.pathname+'"]').parent().addClass('active');
+        });
+
+        // Add active class to current menu item
+        $('.nav-item a').each(function() {
+            var href = $(this).attr('href').replace(/\/$/, "");
+            if (path === href) {
+                $(this).parent().addClass('active');
+                // Also activate parent items for dropdown menus
+                $(this).closest('.collapse').addClass('show');
+                $(this).closest('.nav-item').addClass('active');
+            }
+        });
+    </script>
+    
+</body>
+</html>

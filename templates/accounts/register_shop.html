@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register as Shop Owner - ShopSmart{% endblock %}
+
+{% block content %}
+<!-- Success Page (hidden by default) -->
+<!-- Success Page (visible after registration) -->
+<div id="success-page" class="container py-5" style="display: {% if request.GET.success %}block{% else %}none{% endif %};">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5 text-center">
+        <div class="mb-4">
+          <img src="{% static 'images/success-icon.jpeg' %}" alt="Success" style="width: 100px; height: 100px;">
+        </div>
+
+        <h2 class="mb-3 fw-bold">Almost Done!</h2>
+        <p class="lead mb-3">
+          We've sent a 6-digit verification code to your email.
+        </p>
+        <p class="lead mb-4">
+          Click below to verify your account and complete the registration process.
+        </p>
+
+        <div class="d-grid gap-2">
+          <a href="{% url 'accounts:verify' %}?email={{ email }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-shield-check me-2"></i> Continue to Verification
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Registration Form (visible by default) -->
+<div id="registration-form-page" class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+       <form method="post" id="registration-form" novalidate>
+            {% csrf_token %}
+
+            <div id="error-container" class="container mb-4" style="display: none;">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Error!</strong> <span id="error-message"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="mb-4 fw-bold text-center">Register as a Shop Owner</h2>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                {{ user_form.email.label_tag }}
+                {{ user_form.email }}
+                {% if user_form.email.errors %}
+                <div class="invalid-feedback d-block">{{ user_form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3 row g-2">
+                <div class="col-md-6 position-relative">
+                    {{ user_form.password1.label_tag }}
+                    <div class="input-group">
+                        {{ user_form.password1 }}
+                        <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
+                    {% if user_form.password1.errors %}
+                    <div class="invalid-feedback d-block">{{ user_form.password1.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 position-relative">
+                    {{ user_form.password2.label_tag }}
+                    <div class="input-group">
+                        {{ user_form.password2 }}
+                        <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
+                    {% if user_form.password2.errors %}
+                    <div class="invalid-feedback d-block">{{ user_form.password2.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% for field in profile_form %}
+            <div class="mb-3">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.name == 'phone' %}
+                <small class="phone-help">10 digits only (no spaces or special characters)</small>
+                {% endif %}
+                {% if field.errors %}
+                <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                <i class="bi bi-person-plus me-2"></i> Create Shop Owner Account
+            </button>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a></p>
+                <p class="text-muted">Want to register as a customer instead? 
+                    <a href="{% url 'accounts:register_customer' %}">Register as Customer</a>
+                </p>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- styles -->
+<style>
+  .invalid-feedback {
+    display: block !important; /* Force display */
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+  }
+  
+  .is-invalid {
+    border-color: #dc3545 !important;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+  
+  #error-container {
+    position: sticky;
+    top: 20px;
+    z-index: 1000;
+  }
+
+/* Add to your existing CSS */
+#shop_phone:invalid, #customer_phone:invalid {
+    border-color: #dc3545;
+}
+
+#shop_phone:valid, #customer_phone:valid {
+    border-color: #28a745;
+}
+
+.phone-help {
+    font-size: 0.8rem;
+    color: #6c757d;
+    display: block;
+    margin-top: 0.25rem;
+}
+</style>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Password strength meter
+    const passwordInput = document.getElementById('id_password1');
+    if (passwordInput) {
+      passwordInput.addEventListener('input', function () {
+        const result = zxcvbn(this.value);
+        const score = result.score;
+        const strength = (score + 1) * 25;
+        const progressBar = document.querySelector('.progress-bar');
+        const strengthText = document.querySelector('.strength-text');
+
+        if (progressBar && strengthText) {
+          progressBar.style.width = strength + '%';
+          const strengthMap = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+          const colorMap = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#28a745'];
+
+          strengthText.textContent = strengthMap[score];
+          strengthText.style.color = colorMap[score];
+          progressBar.style.backgroundColor = colorMap[score];
+        }
+      });
+    }
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+      button.addEventListener('click', function () {
+        const input = this.closest('.input-group').querySelector('input');
+        const icon = this.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.classList.replace('bi-eye-slash', 'bi-eye');
+        } else {
+          input.type = 'password';
+          icon.classList.replace('bi-eye', 'bi-eye-slash');
+        }
+      });
+    });
+
+    // Phone number validation
+    const phoneInput = document.getElementById('shop_phone');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length > 10) {
+          this.value = this.value.slice(0, 10);
+        }
+      });
+    }
+  });
+
+  // AJAX Form Submission
+  $(document).ready(function () {
+    $('#registration-form').on('submit', function (e) {
+      e.preventDefault();
+
+      $.ajax({
+        type: 'POST',
+        url: $(this).attr('action') || window.location.href,
+        data: $(this).serialize(),
+        success: function (response) {
+          if (response.redirect_url) {
+            // Show success page
+            $('#registration-form-page').hide();
+            $('#success-page').show();
+            window.scrollTo(0, 0);
+
+            // Optional delay before redirect
+            setTimeout(() => {
+              window.location.href = response.redirect_url;
+            }, 5000); // Redirect after 5 seconds
+          }
+        },
+        error: function (xhr) {
+          let errorMsg = 'Something went wrong. Please try again.';
+          const errorContainer = $('#error-container');
+          const errorMessage = $('#error-message');
+
+          if (xhr.responseJSON && xhr.responseJSON.error) {
+            errorMsg = xhr.responseJSON.error;
+          }
+
+          errorMessage.text(errorMsg);
+          errorContainer.slideDown();
+
+          $('html, body').animate({
+            scrollTop: errorContainer.offset().top - 20
+          }, 500);
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock %}

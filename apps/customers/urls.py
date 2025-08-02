@@ -1,0 +1,15 @@
+from django.urls import path
+from . import views  
+
+app_name = 'customers'  # This registers the namespace
+
+urlpatterns = [
+    path('dashboard/', views.customers_dashboard, name='dashboard'),
+    path('products/', views.product_list, name='product_list'),
+    path('products/<int:pk>/', views.product_detail, name='product_detail'),
+    path('wishlist/', views.wishlist_view, name='wishlist'),
+    path('wishlist/add/', views.add_wishlist, name='add_wishlist'),
+    path('wishlist/remove/', views.remove_wishlist, name='remove_wishlist'),
+    path('product/<int:pk>/', views.product_detail, name='product_detail'),
+    path('product/<int:pk>/review/', views.submit_review, name='submit_review'),
+]

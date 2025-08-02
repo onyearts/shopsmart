@@ -1,0 +1,140 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+   
+    <div class="page-header">
+        <h3 class="page-title">Add/Edit Products</h3>
+    </div>
+
+    <div class="card">
+    <div class="card-body">
+    <h4 class="card-title">Add and edit products here</h4>
+    <p class="card-description"> Add and edit products to be displayed on the dashboard or under you shop name when customer search for your products </p>
+    <form class="forms-sample" id="product-form" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
+
+    <div class="form-group">
+        <label>Product Name</label>
+        {{ form.name }}
+    </div>
+
+    <div class="form-group">
+        <label>Description</label>
+        {{ form.description }}
+    </div>
+
+    <div class="form-group">
+        <label>Price</label>
+        {{ form.price }}
+    </div>
+
+    <div class="form-group">
+        <label>Stock</label>
+        {{ form.stock }}
+    </div>
+
+    <div class="form-group">
+        <label>Upload Image</label>
+        {{ form.image }}
+    </div>
+
+    <div class="form-group">
+        <label>City</label>
+        {{ form.city }}
+    </div>
+
+    <div class="form-group">
+        <label>Extra Notes</label>
+        {{ form.extra_note }}
+    </div>
+
+    <div class="form-check mb-3">
+        {{ form.is_active }} <label class="form-check-label">Is Active</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary me-2">Submit</button>
+    <a href="{% url 'shops:dashboard' %}" class="btn btn-dark">Cancel</a>
+</form>
+    </div>
+    </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<style>
+.toast {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+.toast.fade-out {
+    opacity: 0;
+}
+.toast-progress {
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.8);
+    animation: shrink 4s linear forwards;
+}
+@keyframes shrink {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+</style>
+
+<script>
+document.getElementById('product-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    try {
+        const response = await axios.post("{% url 'shops:product_add_edit' %}", formData, {
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        if (response.status === 200 || response.status === 201) {
+            showToast("Product submitted successfully!", "success");
+            form.reset();
+        }
+    } catch (error) {
+        console.error(error);
+        showToast("Something went wrong while submitting the product.", "danger");
+    }
+});
+
+function showToast(message, type = "success", duration = 4000) {
+    const container = document.getElementById("toast-container");
+    const toast = document.createElement("div");
+    toast.className = `toast align-items-center text-bg-${type} border-0 show mb-2 position-relative`;
+    toast.setAttribute("role", "alert");
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="removeToast(this)"></button>
+        </div>
+        <div class="toast-progress position-absolute bottom-0 start-0 end-0"></div>
+    `;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add("fade-out");
+        setTimeout(() => toast.remove(), 500); // Wait for fade-out
+    }, duration);
+}
+
+function removeToast(btn) {
+    const toast = btn.closest('.toast');
+    toast.classList.add("fade-out");
+    setTimeout(() => toast.remove(), 500);
+}
+</script>
+
+
+{% endblock %}
