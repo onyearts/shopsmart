@@ -28,9 +28,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-byw2s-4jb_7#*=xk8n-0h3tz25=87qle#cy#mp3mq3ql0nwovr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['shopsmart.pythonanywhere.com']
+
 
 
 # Application definition
@@ -143,8 +144,10 @@ LOGIN_REDIRECT_URL = 'shops:dashboard'  # For shop owners
 LOGIN_URL = 'accounts:login'
 
 #media
+STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # to send verification code to email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
