@@ -36,7 +36,7 @@ class UserRegistrationForm(UserCreationForm):
 class ShopOwnerRegistrationForm(forms.ModelForm):
     phone = forms.CharField(
         widget=forms.TextInput(attrs={
-            'pattern': '\d{10}',
+            'pattern': r'\d{10}',
             'title': '10 digit phone number required',
             'placeholder': '1234567890',
             'maxlength': '10',
