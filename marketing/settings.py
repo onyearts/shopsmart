@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-byw2s-4jb_7#*=xk8n-0h3tz25=87qle#cy#mp3mq3ql0nwovr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['shopsmart.pythonanywhere.com']
+ALLOWED_HOSTS = ['shopsmart.pythonanywhere.com', '127.0.0.1']
 
 
 
