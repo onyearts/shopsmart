@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 
+from accounts.models import User     # assuming shop owners are in User model
+from django.db.models import Count
 from shops.models import Product
 from .models import Wishlist
 from .models import Wishlist, Review
@@ -15,7 +17,31 @@ from .forms import ReviewForm
 def customers_dashboard(request):
     if not request.user.is_customer:
         return redirect('accounts:login')
-    return render(request, 'customers/dashboard.html')
+
+    total_products = Product.objects.count()
+    total_shops = User.objects.filter(is_shop_owner=True).count()
+
+    # Recently added products (limit to 5)
+    recent_products = Product.objects.order_by('-created_at')[:5]
+
+    # Shop owners with most products
+    top_shops = (
+    User.objects.filter(is_shop_owner=True)
+    .annotate(product_count=Count('shopownerprofile__products'))
+    .order_by('-product_count')[:5]
+    )
+
+
+
+    context = {
+        'total_products': total_products,
+        'total_shops': total_shops,
+        'recent_products': recent_products,
+        'top_shops': top_shops,
+    }
+    return render(request, 'customers/dashboard.html', context)
+
+
 
 def product_list(request):
     qs = Product.objects.filter(is_active=True).select_related('shop_owner')

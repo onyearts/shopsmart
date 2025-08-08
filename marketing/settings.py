@@ -137,6 +137,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_files')]  # Source static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # Collected static files destination
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -145,14 +146,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'shops:dashboard'  # For shop owners
 LOGIN_URL = 'accounts:login'
 
-# Media files (user-uploaded content)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-
 # to send verification code to email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
 
 # Email settings for real delivery
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

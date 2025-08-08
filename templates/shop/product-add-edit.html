@@ -50,7 +50,11 @@
         {{ form.is_active }} <label class="form-check-label">Is Active</label>
     </div>
 
-    <button type="submit" class="btn btn-primary me-2">Submit</button>
+    <button type="submit" id="submit-btn" class="btn btn-primary me-2">
+        <span id="submit-text">Submit</span>
+        <span id="submit-loader" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+    </button>
+
     <a href="{% url 'shops:dashboard' %}" class="btn btn-dark">Cancel</a>
 </form>
     </div>
@@ -85,6 +89,14 @@ document.getElementById('product-form').addEventListener('submit', async functio
 
     const form = e.target;
     const formData = new FormData(form);
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitLoader = document.getElementById('submit-loader');
+
+    // Show loader
+    submitBtn.disabled = true;
+    submitLoader.classList.remove('d-none');
+    submitText.textContent = 'Saving...';
 
     try {
         const response = await axios.post("{% url 'shops:product_add_edit' %}", formData, {
@@ -101,6 +113,11 @@ document.getElementById('product-form').addEventListener('submit', async functio
     } catch (error) {
         console.error(error);
         showToast("Something went wrong while submitting the product.", "danger");
+    } finally {
+        // Hide loader
+        submitBtn.disabled = false;
+        submitLoader.classList.add('d-none');
+        submitText.textContent = 'Submit';
     }
 });
 
@@ -120,7 +137,7 @@ function showToast(message, type = "success", duration = 4000) {
 
     setTimeout(() => {
         toast.classList.add("fade-out");
-        setTimeout(() => toast.remove(), 500); // Wait for fade-out
+        setTimeout(() => toast.remove(), 500); // Wait for fade-out animation
     }, duration);
 }
 
@@ -130,6 +147,7 @@ function removeToast(btn) {
     setTimeout(() => toast.remove(), 500);
 }
 </script>
+
 
 
 {% endblock %}
