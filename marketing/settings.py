@@ -15,6 +15,8 @@ from pathlib import Path
 # Add near top
 import os
 import sys
+
+from django.forms import Media
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
 
@@ -28,10 +30,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-byw2s-4jb_7#*=xk8n-0h3tz25=87qle#cy#mp3mq3ql0nwovr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-#ALLOWED_HOSTS = ['shopsmart.pythonanywhere.com', '127.0.0.1']
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['shopsmart.pythonanywhere.com', '127.0.0.1']
+#ALLOWED_HOSTS = ['*']
 
 
 
@@ -134,25 +136,25 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # Static files (CSS, JavaScript, Images)
-#STATIC_URL = 'static/'
-#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_files')]  # Source static files
-#STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # Collected static files destination
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_files')]  # Source static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # Collected static files destination
 
 # Media files (user uploads)
-#MEDIA_URL = '/media/'
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For production
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # For development
-]
+#STATIC_URL = '/static/'
+#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For production
+#STATICFILES_DIRS = [
+#    os.path.join(BASE_DIR, 'static'),  # For development
+#]
 
 # Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+#MEDIA_URL = '/media/'
+#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
