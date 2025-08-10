@@ -6,12 +6,99 @@ from django.http import JsonResponse
 from .models import Product
 from .forms import EditUserForm, EditShopOwnerForm, EditCustomerForm
 from django.contrib import messages
+from django.db.models import Q
 
 
 
 @login_required
+def shop_search(request):
+    if not request.user.is_shop_owner:
+        return redirect('accounts:login')
+
+    query = request.GET.get('q', '')
+    products = Product.objects.filter(shop_owner=request.user.shopownerprofile)
+    
+    if query:
+        products = products.filter(
+            Q(name__icontains=query) | 
+            Q(description__icontains=query) |
+            Q(extra_note__icontains=query)
+        ).order_by('-created_at')
+
+    return render(request, 'shop/search_results.html', {
+        'products': products,
+        'query': query
+    })
+
+@login_required
+def shop_search_suggestions(request):
+    if not request.user.is_shop_owner:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    query = request.GET.get('q', '')
+    suggestions = []
+    
+    if query and len(query) >= 2:
+        products = Product.objects.filter(
+            Q(name__icontains=query) | 
+            Q(description__icontains=query),
+            shop_owner=request.user.shopownerprofile
+        ).order_by('name')[:5]
+        
+        suggestions = [product.name for product in products]
+    
+    return JsonResponse({'suggestions': suggestions})
+
+
+@login_required
 def dashboard(request):
-    return render(request, 'shop/dashboard.html')
+    if not request.user.is_shop_owner:
+        return redirect('accounts:login')
+
+    shop_owner = request.user.shopownerprofile
+    products = Product.objects.filter(shop_owner=shop_owner)
+    recent_products = products.order_by('-created_at')[:5]
+    
+    # Calculate product stats
+    active_products = products.filter(is_active=True)
+    low_stock_products = active_products.filter(stock__lte=5, stock__gt=0)
+    out_of_stock_products = active_products.filter(stock=0)
+    
+    # Calculate percentages for stock overview
+    total_active = active_products.count()
+    in_stock_count = active_products.filter(stock__gt=5).count()
+    low_stock_count = low_stock_products.count()
+    out_of_stock_count = out_of_stock_products.count()
+    
+    in_stock_percentage = 0
+    if total_active > 0:
+        in_stock_percentage = round((in_stock_count / total_active) * 100)
+
+    # Check for partial refresh request
+    if request.GET.get('partial') == 'true':
+        data = {
+            'total_products': products.count(),
+            'active_products': active_products.count(),
+            'low_stock_products': low_stock_products.count(),
+            'out_of_stock_products': out_of_stock_products.count(),
+            'in_stock_count': in_stock_count,
+            'low_stock_count': low_stock_count,
+            'out_of_stock_count': out_of_stock_count
+        }
+        return JsonResponse(data)
+
+    context = {
+        'products': products,
+        'recent_products': recent_products,
+        'active_products': active_products,
+        'low_stock_products': low_stock_products,
+        'out_of_stock_products': out_of_stock_products,
+        'in_stock_count': in_stock_count,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'in_stock_percentage': in_stock_percentage
+    }
+    return render(request, 'shop/dashboard.html', context)
 
 
 @login_required
@@ -37,7 +124,7 @@ def product_add_edit(request):
 @login_required
 def product_list(request):
     if not request.user.is_shop_owner:
-        return redirect('accounts:profile')
+        return redirect('accounts:login')
 
     shop_owner = request.user.shopownerprofile
     products = Product.objects.filter(shop_owner=shop_owner).order_by('-created_at')

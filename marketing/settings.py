@@ -165,14 +165,14 @@ LOGIN_REDIRECT_URL = 'shops:dashboard'  # For shop owners
 LOGIN_URL = 'accounts:login'
 
 # to send verification code to email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Email settings for real delivery
+# settings.py
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_USE_TLS = False
+EMAIL_PORT = 587  # Must use 587 with TLS
+EMAIL_USE_TLS = True  # Not SSL
+EMAIL_USE_SSL = False  # Disable SSL
 EMAIL_HOST_USER = 'onyearts@gmail.com'
-EMAIL_HOST_PASSWORD = 'wmba hbob ykkx bmnm'  # Use Gmail App Password
-DEFAULT_FROM_EMAIL = f'ShopSmart <{EMAIL_HOST_USER}>'
+EMAIL_HOST_PASSWORD = 'ykey pvdt epfs oljc'  # Use Gmail App Password
+DEFAULT_FROM_EMAIL = 'ShopSmart <onyearts@gmail.com>'

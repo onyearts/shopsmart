@@ -1,0 +1,185 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-content">
+        <!-- Search Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="page-title mb-1">
+                    <i class="ri-search-line me-2"></i> Search Results
+                </h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'shops:dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Search</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'shops:product_add_edit' %}" class="btn btn-primary">
+                    <i class="ri-add-line me-1"></i> Add Product
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Results Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="mb-4">
+                    <i class="ri-search-2-line me-2"></i> Results for "{{ query }}"
+                </h5>
+                
+                {% if products %}
+                <div class="table-responsive">
+                    <table class="table table-hover meteor-table">
+                        <thead class="meteor-table-header">
+                            <tr>
+                                <th><i class="ri-product-hunt-line me-2"></i> Product</th>
+                                <th><i class="ri-money-dollar-circle-line me-2"></i> Price</th>
+                                <th><i class="ri-stack-line me-2"></i> Stock</th>
+                                <th><i class="ri-information-line me-2"></i> Status</th>
+                                <th><i class="ri-settings-2-line me-2"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr class="meteor-table-row">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if product.image %}
+                                        <img src="{{ product.image.url }}" 
+                                             class="rounded me-3" 
+                                             width="40" 
+                                             height="40" 
+                                             style="object-fit: cover;"
+                                             alt="{{ product.name }}">
+                                        {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" 
+                                             style="width:40px;height:40px;">
+                                            <i class="ri-image-line text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <a href="{% url 'shops:product_edit' product.id %}" class="text-reset">
+                                                {{ product.name }}
+                                            </a>
+                                            <small class="text-muted d-block">{{ product.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Gh₵{{ product.price }}</td>
+                                <td>
+                                    <span class="{% if product.stock <= 5 %}text-warning fw-bold{% endif %}">
+                                        {{ product.stock }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if product.is_active %}
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="ri-checkbox-circle-line me-1"></i> Active
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary rounded-pill">
+                                            <i class="ri-close-circle-line me-1"></i> Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'shops:product_edit' product.id %}" 
+                                           class="btn btn-sm btn-outline-primary"
+                                           data-bs-toggle="tooltip" 
+                                           title="Edit">
+                                            <i class="ri-pencil-line"></i>
+                                        </a>
+                                        <a href="{% url 'shops:product_json' product.id %}" 
+                                           class="btn btn-sm btn-outline-info"
+                                           data-bs-toggle="tooltip" 
+                                           title="View Details">
+                                            <i class="ri-eye-line"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="ri-search-eye-line text-muted" style="font-size: 5rem;"></i>
+                    </div>
+                    <h4 class="text-muted">No Products Found</h4>
+                    <p class="text-muted">No products match your search for "{{ query }}"</p>
+                    <a href="{% url 'shops:product_list' %}" class="btn btn-primary mt-3">
+                        <i class="ri-arrow-left-line me-1"></i> Back to Products
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Meteor Table Styles */
+    .meteor-table {
+        --bs-table-bg: transparent;
+        --bs-table-striped-bg: rgba(114, 105, 239, 0.03);
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .meteor-table-header {
+        background-color: #f8f9fa;
+    }
+    
+    .meteor-table-header th {
+        border-bottom: 2px solid #f1f1f1;
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .meteor-table-row td {
+        border-bottom: 1px solid #f1f1f1;
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+    
+    .meteor-table-row:last-child td {
+        border-bottom: none;
+    }
+    
+    .meteor-table-row:hover {
+        background-color: rgba(114, 105, 239, 0.05);
+    }
+    
+    /* Badge Styles */
+    .badge.rounded-pill {
+        padding: 5px 10px;
+        font-weight: 500;
+    }
+    
+    /* Empty State Styles */
+    .text-muted {
+        color: #6c757d !important;
+    }
+</style>
+
+<script>
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

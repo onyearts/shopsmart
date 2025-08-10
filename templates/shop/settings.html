@@ -2,47 +2,132 @@
 {% load static %}
 
 {% block content %}
-<div class="card">
-  <div class="card-body">
-    <h4 class="card-title"><i class="mdi mdi-cog-outline me-2"></i>Settings</h4>
-    <p class="card-description"> Manage your preferences </p>
+<div class="page-container">
+    <div class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="page-title mb-1">
+                            <i class="ri-settings-3-line me-2"></i> Account Settings
+                        </h3>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{% url 'shops:dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Settings</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
 
-    <form method="POST" action="#">
-      {% csrf_token %}
-
-      <div class="form-group">
-        <label for="email_notifications">Email Notifications</label>
-        <select id="email_notifications" class="form-select">
-          <option selected>Enable</option>
-          <option>Disable</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="theme_mode">Theme</label>
-        <select id="theme_mode" class="form-select">
-          <option>Light</option>
-          <option>Dark</option>
-        </select>
-      </div>
-
-        <div class="form-group">
-            <label for="language">Language</label>
-            <select id="language" class="form-select">
-            <option selected>English</option>
-            <option>Spanish</option>
-            <option>French</option>
-            </select>
+                <!-- Settings Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="mb-4">
+                            <i class="ri-user-settings-line me-2"></i> Preferences
+                        </h5>
+                        
+                        <form method="POST" action="#">
+                            {% csrf_token %}
+                            
+                            <div class="row g-3">
+                                <!-- Notification Settings -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email_notifications" class="form-label">
+                                            <i class="ri-mail-line me-2"></i>Email Notifications
+                                        </label>
+                                        <select id="email_notifications" class="form-select">
+                                            <option selected>Enable</option>
+                                            <option>Disable</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Theme Settings -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="theme_mode" class="form-label">
+                                            <i class="ri-contrast-line me-2"></i>Theme
+                                        </label>
+                                        <select id="theme_mode" class="form-select">
+                                            <option>Light</option>
+                                            <option>Dark</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Language Settings -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="language" class="form-label">
+                                            <i class="ri-global-line me-2"></i>Language
+                                        </label>
+                                        <select id="language" class="form-select">
+                                            <option selected>English</option>
+                                            <option>Spanish</option>
+                                            <option>French</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Security Section -->
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <h5 class="mb-3">
+                                        <i class="ri-shield-keyhole-line me-2"></i> Security
+                                    </h5>
+                                    
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">Password</h6>
+                                            <p class="text-muted small mb-0">Last changed 3 months ago</p>
+                                        </div>
+                                        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="ri-key-2-line me-1"></i> Change Password
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Form Actions -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{% url 'shops:dashboard' %}" class="btn btn-light">
+                                            Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="ri-save-line me-1"></i> Save Changes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-primary">Change Password</a>
-        </div>
-
-
-      <button type="submit" class="btn btn-primary me-2">Save Changes</button>
-      <a href="{% url 'shops:dashboard' %}" class="btn btn-light">Cancel</a>
-    </form>
-  </div>
+    </div>
 </div>
+
+<style>
+    /* Consistent Meteor styling */
+    .card {
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    
+    .border-top {
+        border-top: 1px solid rgba(0,0,0,0.1) !important;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    .form-select {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+</style>
 {% endblock %}

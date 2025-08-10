@@ -2,37 +2,153 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
-  <div class="card shadow">
-    <div class="card-body d-flex align-items-center">
-      <img src="{{ request.user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle me-4" width="100" height="100">
+<div class="page-container">
+    <div class="page-content">
+        <!-- Profile Header -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="card-title mb-0">My Profile</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row align-items-center">
+                    <!-- Profile Picture -->
+                    <div class="me-md-4 mb-4 mb-md-0 text-center">
+                        <img src="{{ request.user.profile_picture.url }}" 
+                             alt="Profile Picture" 
+                             class="rounded-circle border"
+                             width="120" 
+                             height="120"
+                             onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
+                        <a href="{% url 'shops:edit_profile' %}" class="btn btn-sm btn-primary mt-3">
+                            <i class="ri-edit-line me-1"></i> Edit Profile
+                        </a>
+                    </div>
 
-      <div>
-        <h4>{{ request.user.get_full_name }}</h4>
-        <p class="text-muted">{{ request.user.email }}</p>
-        <p><strong>Role:</strong>
-          {% if request.user.is_shop_owner %} Shop Owner
-          {% elif request.user.is_customer %} Customer
-          {% endif %}
-        </p>
+                    <!-- Profile Details -->
+                    <div class="flex-grow-1">
+                        <h3 class="mb-2">{{ request.user.get_full_name }}</h3>
+                        <p class="text-muted mb-3">
+                            <i class="ri-mail-line me-2"></i> {{ request.user.email }}
+                        </p>
 
-        {% if profile %}
-          {% if request.user.is_shop_owner %}
-            <p><strong>Shop Name:</strong> {{ profile.shop_name }}</p>
-            <p><strong>Phone:</strong> {{ profile.phone }}</p>
-            <p><strong>Address:</strong> {{ profile.address }}</p>
-            {% if profile.map_address %}
-              <p><strong>Location:</strong> {{ profile.map_address }} ({{ profile.latitude }}, {{ profile.longitude }})</p>
-            {% endif %}
-          {% else %}
-            <p><strong>Phone:</strong> {{ profile.phone }}</p>
-            <p><strong>Preferred Location:</strong> {{ profile.preferred_location }}</p>
-          {% endif %}
+                        <div class="badge bg-primary-subtle text-primary mb-3">
+                            {% if request.user.is_shop_owner %}
+                            <i class="ri-store-2-line me-1"></i> Shop Owner
+                            {% elif request.user.is_customer %}
+                            <i class="ri-user-3-line me-1"></i> Customer
+                            {% endif %}
+                        </div>
+
+                        {% if profile %}
+                        <div class="row">
+                            {% if request.user.is_shop_owner %}
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h6 class="fw-semibold mb-1">Shop Information</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="ri-store-line me-2 text-muted"></i>
+                                            <span>{{ profile.shop_name }}</span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="ri-phone-line me-2 text-muted"></i>
+                                            <span>{{ profile.phone }}</span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="ri-map-pin-line me-2 text-muted"></i>
+                                            <span>{{ profile.address }}</span>
+                                        </li>
+                                        {% if profile.map_address %}
+                                        <li class="mb-2">
+                                            <i class="ri-map-2-line me-2 text-muted"></i>
+                                            <span>{{ profile.map_address }}</span>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h6 class="fw-semibold mb-1">Contact Information</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="ri-phone-line me-2 text-muted"></i>
+                                            <span>{{ profile.phone }}</span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="ri-map-pin-line me-2 text-muted"></i>
+                                            <span>{{ profile.preferred_location }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Sections -->
+        {% if request.user.is_shop_owner %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Shop Statistics</h5>
+                        <a href="#" class="btn btn-sm btn-link">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <p class="text-muted mb-1">Total Products</p>
+                                <h4 class="mb-0">0</h4>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-1">Total Orders</p>
+                                <h4 class="mb-0">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="ri-add-line me-2"></i> Add New Product
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary w-100">
+                            <i class="ri-settings-3-line me-2"></i> Shop Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endif %}
-
-        <a href="{% url 'shops:edit_profile' %}" class="btn btn-primary btn-sm mt-3">Edit Profile</a>
-      </div>
     </div>
-  </div>
 </div>
+
+<style>
+    .profile-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .list-unstyled li {
+        padding: 5px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .badge.bg-primary-subtle {
+        padding: 5px 10px;
+        font-weight: 500;
+    }
+</style>
 {% endblock %}

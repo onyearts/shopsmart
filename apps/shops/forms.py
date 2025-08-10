@@ -41,6 +41,13 @@ class EditShopOwnerForm(forms.ModelForm):
                 field.widget.attrs['class'] = 'form-control'
             else:
                 field.required = False
+        
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            if not (phone.startswith('0') and len(phone) == 10) and not (phone.startswith('+233') and len(phone) == 13):
+                raise forms.ValidationError("Phone must be in 0XXXXXXXXX or +233XXXXXXXXX format")
+        return phone
 
 
 
@@ -48,3 +55,10 @@ class EditCustomerForm(forms.ModelForm):
     class Meta:
         model = CustomerProfile
         fields = ['phone', 'preferred_location']
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            if not (phone.startswith('0') and len(phone) == 10) and not (phone.startswith('+233') and len(phone) == 13):
+                raise forms.ValidationError("Phone must be in 0XXXXXXXXX or +233XXXXXXXXX format")
+        return phone

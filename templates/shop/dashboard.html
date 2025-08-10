@@ -1,282 +1,432 @@
 {% extends 'shop/base.html' %}
+{% load static %}
 
 {% block content %}
+<div class="page-container">
+    <div class="page-content">
+        <!-- Dashboard Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="mb-1">
+                    <i class="ri-dashboard-line me-2"></i> Dashboard
+                </h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary" onclick="refreshDashboard()">
+                    <i class="ri-refresh-line"></i>
+                </button>
+                <a href="{% url 'shops:product_add_edit' %}" class="btn btn-primary">
+                    <i class="ri-add-line me-1"></i> Add Product
+                </a>
+            </div>
+        </div>
 
-<div class="row">
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Products</h6>
+                                <h3 class="mb-0" id="total-products">{{ products.count }}</h3>
+                            </div>
+                            <div class="bg-primary bg-opacity-25 p-3 rounded">
+                                <i class="ri-shopping-basket-line text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Active Products</h6>
+                                <h3 class="mb-0" id="active-products">{{ active_products.count }}</h3>
+                            </div>
+                            <div class="bg-success bg-opacity-25 p-3 rounded">
+                                <i class="ri-checkbox-circle-line text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Low Stock (≤5)</h6>
+                                <h3 class="mb-0" id="low-stock">{{ low_stock_products.count }}</h3>
+                            </div>
+                            <div class="bg-warning bg-opacity-25 p-3 rounded">
+                                <i class="ri-alert-line text-warning" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Out of Stock</h6>
+                                <h3 class="mb-0" id="out-of-stock">{{ out_of_stock_products.count }}</h3>
+                            </div>
+                            <div class="bg-info bg-opacity-25 p-3 rounded">
+                                <i class="ri-close-circle-line text-info" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
-            <div class="col-9">
-            <div class="d-flex align-items-center align-self-start">
-                <h3 class="mb-0">$12.34</h3>
-                <p class="text-success ms-2 mb-0 font-weight-medium">+3.5%</p>
+            <!-- Recent Products -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">
+                                <i class="ri-list-check-2 me-2"></i> Recent Products
+                            </h5>
+                            <a href="{% url 'shops:product_list' %}" class="btn btn-sm btn-outline-primary">
+                                View All <i class="ri-arrow-right-line ms-1"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in recent_products %}
+                                    <tr id="product-row-{{ product.id }}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if product.image %}
+                                                <img src="{{ product.image.url }}" 
+                                                    class="rounded me-3" width="40" height="40" style="object-fit: cover;">
+                                                {% else %}
+                                                <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" 
+                                                    style="width:40px;height:40px;">
+                                                    <i class="ri-image-line text-muted"></i>
+                                                </div>
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">{{ product.name }}</h6>
+                                                    <small class="text-muted">{{ product.created_at|timesince }} ago</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Gh₵{{ product.price }}</td>
+                                        <td>
+                                            <span class="{% if product.stock <= 5 %}text-warning{% elif product.stock == 0 %}text-danger{% endif %}">
+                                                {{ product.stock }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if product.is_active %}
+                                                {% if product.stock == 0 %}
+                                                <span class="badge bg-danger rounded-pill">
+                                                    <i class="ri-close-circle-line me-1"></i> Out of Stock
+                                                </span>
+                                                {% elif product.stock <= 5 %}
+                                                <span class="badge bg-warning rounded-pill">
+                                                    <i class="ri-alert-line me-1"></i> Low Stock
+                                                </span>
+                                                {% else %}
+                                                <span class="badge bg-success rounded-pill">
+                                                    <i class="ri-checkbox-circle-line me-1"></i> Active
+                                                </span>
+                                                {% endif %}
+                                            {% else %}
+                                            <span class="badge bg-secondary rounded-pill">
+                                                <i class="ri-close-circle-line me-1"></i> Inactive
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="{% url 'shops:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ product.id }})">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <div class="mb-3">
+                                                <i class="ri-shopping-basket-line text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                            <h5 class="text-muted">No Products Found</h5>
+                                            <p class="text-muted">You haven't added any products yet</p>
+                                            <a href="{% url 'shops:product_add_edit' %}" class="btn btn-primary mt-2">
+                                                <i class="ri-add-line me-1"></i> Add Your First Product
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Quick Stats & Shop Info -->
+             <!-- Quick Stats & Shop Info -->
+            <div class="col-lg-4">
+                <!-- Stock Overview - Fixed Height Version -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="mb-4">
+                            <i class="ri-bar-chart-2-line me-2"></i> Stock Overview
+                        </h5>
+                        <div style="height: 200px; position: relative;">
+                            <canvas id="stockChart" style="max-height: 200px;"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">In Stock</span>
+                                <span class="fw-bold">{{ in_stock_percentage }}%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                    style="width: {{ in_stock_percentage }}%" 
+                                    aria-valuenow="{{ in_stock_percentage }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                        <!-- Shop Info -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="mb-4">
+                                    <i class="ri-store-2-line me-2"></i> {{ request.user.shopownerprofile.shop_name|default:"My Shop" }}
+                                </h5>
+                                <ul class="list-unstyled">
+                                    <li class="mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light p-2 rounded me-3">
+                                                <i class="ri-user-line text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">Owner</small>
+                                                <p class="mb-0">{{ request.user.get_full_name }}</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light p-2 rounded me-3">
+                                                <i class="ri-phone-line text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">Phone</small>
+                                                <p class="mb-0">{{ request.user.shopownerprofile.phone|default:"Not specified" }}</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light p-2 rounded me-3">
+                                                <i class="ri-map-pin-line text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">Address</small>
+                                                <p class="mb-0">{{ request.user.shopownerprofile.address|default:"Not specified" }}</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light p-2 rounded me-3">
+                                                <i class="ri-map-2-line text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">Location</small>
+                                                <p class="mb-0">{{ request.user.shopownerprofile.map_address|default:"Not specified" }}</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <a href="{% url 'shops:edit_profile' %}" class="btn btn-outline-primary w-100 mt-3">
+                                    <i class="ri-settings-3-line me-1"></i> Edit Shop Info
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-3">
-            <div class="icon icon-box-success ">
-                <span class="mdi mdi-arrow-top-right icon-item"></span>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
             </div>
         </div>
-        <h6 class="text-muted font-weight-normal">Potential growth</h6>
-        </div>
-    </div>
-    </div>
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-        <div class="row">
-            <div class="col-9">
-            <div class="d-flex align-items-center align-self-start">
-                <h3 class="mb-0">$17.34</h3>
-                <p class="text-success ms-2 mb-0 font-weight-medium">+11%</p>
-            </div>
-            </div>
-            <div class="col-3">
-            <div class="icon icon-box-success">
-                <span class="mdi mdi-arrow-top-right icon-item"></span>
-            </div>
-            </div>
-        </div>
-        <h6 class="text-muted font-weight-normal">Revenue current</h6>
-        </div>
-    </div>
-    </div>
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-        <div class="row">
-            <div class="col-9">
-            <div class="d-flex align-items-center align-self-start">
-                <h3 class="mb-0">$12.34</h3>
-                <p class="text-danger ms-2 mb-0 font-weight-medium">-2.4%</p>
-            </div>
-            </div>
-            <div class="col-3">
-            <div class="icon icon-box-danger">
-                <span class="mdi mdi-arrow-bottom-left icon-item"></span>
-            </div>
-            </div>
-        </div>
-        <h6 class="text-muted font-weight-normal">Daily Income</h6>
-        </div>
-    </div>
-    </div>
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-        <div class="row">
-            <div class="col-9">
-            <div class="d-flex align-items-center align-self-start">
-                <h3 class="mb-0">$31.53</h3>
-                <p class="text-success ms-2 mb-0 font-weight-medium">+3.5%</p>
-            </div>
-            </div>
-            <div class="col-3">
-            <div class="icon icon-box-success ">
-                <span class="mdi mdi-arrow-top-right icon-item"></span>
-            </div>
-            </div>
-        </div>
-        <h6 class="text-muted font-weight-normal">Expense current</h6>
-        </div>
-    </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-md-4 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-        <h4 class="card-title">Transaction History</h4>
-        <div class="position-relative">
-            <div class="daoughnutchart-wrapper">
-            <canvas id="transaction-history" class="transaction-chart"></canvas>
-            </div>
-            <div class="custom-value">$1200 <span>Total</span>
-            </div>
-        </div>
-        <div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-            <div class="text-md-center text-xl-left">
-            <h6 class="mb-1">Transfer to Paypal</h6>
-            <p class="text-muted mb-0">07 Jan 2019, 09:12AM</p>
-            </div>
-            <div class="align-self-center flex-grow text-end text-md-center text-xl-right py-md-2 py-xl-0">
-            <h6 class="font-weight-bold mb-0">$236</h6>
-            </div>
-        </div>
-        <div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-            <div class="text-md-center text-xl-left">
-            <h6 class="mb-1">Tranfer to Stripe</h6>
-            <p class="text-muted mb-0">07 Jan 2019, 09:12AM</p>
-            </div>
-            <div class="align-self-center flex-grow text-end text-md-center text-xl-right py-md-2 py-xl-0">
-            <h6 class="font-weight-bold mb-0">$593</h6>
-            </div>
-        </div>
-        </div>
-    </div>
-    </div>
-    <div class="col-md-8 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-        <div class="d-flex flex-row justify-content-between">
-            <h4 class="card-title mb-1">Open Projects</h4>
-            <p class="text-muted mb-1">Your data status</p>
-        </div>
-        <div class="row">
-            <div class="col-12">
-            <div class="preview-list">
-                <div class="preview-item border-bottom">
-                <div class="preview-thumbnail">
-                    <div class="preview-icon bg-primary">
-                    <i class="mdi mdi-file-document"></i>
-                    </div>
-                </div>
-                <div class="preview-item-content d-sm-flex flex-grow">
-                    <div class="flex-grow">
-                    <h6 class="preview-subject">Admin dashboard design</h6>
-                    <p class="text-muted mb-0">Broadcast web app mockup</p>
-                    </div>
-                    <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                    <p class="text-muted">15 minutes ago</p>
-                    <p class="text-muted mb-0">30 tasks, 5 issues </p>
-                    </div>
-                </div>
-                </div>
-                <div class="preview-item border-bottom">
-                <div class="preview-thumbnail">
-                    <div class="preview-icon bg-success">
-                    <i class="mdi mdi-cloud-download"></i>
-                    </div>
-                </div>
-                <div class="preview-item-content d-sm-flex flex-grow">
-                    <div class="flex-grow">
-                    <h6 class="preview-subject">Wordpress Development</h6>
-                    <p class="text-muted mb-0">Upload new design</p>
-                    </div>
-                    <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                    <p class="text-muted">1 hour ago</p>
-                    <p class="text-muted mb-0">23 tasks, 5 issues </p>
-                    </div>
-                </div>
-                </div>
-                <div class="preview-item border-bottom">
-                <div class="preview-thumbnail">
-                    <div class="preview-icon bg-info">
-                    <i class="mdi mdi-clock"></i>
-                    </div>
-                </div>
-                <div class="preview-item-content d-sm-flex flex-grow">
-                    <div class="flex-grow">
-                    <h6 class="preview-subject">Project meeting</h6>
-                    <p class="text-muted mb-0">New project discussion</p>
-                    </div>
-                    <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                    <p class="text-muted">35 minutes ago</p>
-                    <p class="text-muted mb-0">15 tasks, 2 issues</p>
-                    </div>
-                </div>
-                </div>
-                <div class="preview-item border-bottom">
-                <div class="preview-thumbnail">
-                    <div class="preview-icon bg-danger">
-                    <i class="mdi mdi-email-open"></i>
-                    </div>
-                </div>
-                <div class="preview-item-content d-sm-flex flex-grow">
-                    <div class="flex-grow">
-                    <h6 class="preview-subject">Broadcast Mail</h6>
-                    <p class="text-muted mb-0">Sent release details to team</p>
-                    </div>
-                    <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                    <p class="text-muted">55 minutes ago</p>
-                    <p class="text-muted mb-0">35 tasks, 7 issues </p>
-                    </div>
-                </div>
-                </div>
-                <div class="preview-item">
-                <div class="preview-thumbnail">
-                    <div class="preview-icon bg-warning">
-                    <i class="mdi mdi-chart-pie"></i>
-                    </div>
-                </div>
-                <div class="preview-item-content d-sm-flex flex-grow">
-                    <div class="flex-grow">
-                    <h6 class="preview-subject">UI Design</h6>
-                    <p class="text-muted mb-0">New application planning</p>
-                    </div>
-                    <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                    <p class="text-muted">50 minutes ago</p>
-                    <p class="text-muted mb-0">27 tasks, 4 issues </p>
-                    </div>
-                </div>
-                </div>
-            </div>
-            </div>
-        </div>
-        </div>
-    </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-4 grid-margin">
-    <div class="card">
-        <div class="card-body">
-        <h5>Revenue</h5>
-        <div class="row">
-            <div class="col-8 col-sm-12 col-xl-8 my-auto">
-            <div class="d-flex d-sm-block d-md-flex align-items-center">
-                <h2 class="mb-0">$32123</h2>
-                <p class="text-success ms-2 mb-0 font-weight-medium">+3.5%</p>
-            </div>
-            <h6 class="text-muted font-weight-normal">11.38% Since last month</h6>
-            </div>
-            <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-            <i class="icon-lg mdi mdi-codepen text-primary ml-auto"></i>
-            </div>
-        </div>
-        </div>
-    </div>
-    </div>
-    <div class="col-sm-4 grid-margin">
-    <div class="card">
-        <div class="card-body">
-        <h5>Sales</h5>
-        <div class="row">
-            <div class="col-8 col-sm-12 col-xl-8 my-auto">
-            <div class="d-flex d-sm-block d-md-flex align-items-center">
-                <h2 class="mb-0">$45850</h2>
-                <p class="text-success ms-2 mb-0 font-weight-medium">+8.3%</p>
-            </div>
-            <h6 class="text-muted font-weight-normal"> 9.61% Since last month</h6>
-            </div>
-            <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-            <i class="icon-lg mdi mdi-wallet-travel text-danger ml-auto"></i>
-            </div>
-        </div>
-        </div>
-    </div>
-    </div>
-    <div class="col-sm-4 grid-margin">
-    <div class="card">
-        <div class="card-body">
-        <h5>Purchase</h5>
-        <div class="row">
-            <div class="col-8 col-sm-12 col-xl-8 my-auto">
-            <div class="d-flex d-sm-block d-md-flex align-items-center">
-                <h2 class="mb-0">$2039</h2>
-                <p class="text-danger ms-2 mb-0 font-weight-medium">-2.1% </p>
-            </div>
-            <h6 class="text-muted font-weight-normal">2.27% Since last month</h6>
-            </div>
-            <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-            <i class="icon-lg mdi mdi-monitor text-success ml-auto"></i>
-            </div>
-        </div>
-        </div>
-    </div>
-    </div>
 
-          <!-- content-wrapper ends -->
+<!-- Load Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+// Initialize stock chart with fixed dimensions
+const ctx = document.getElementById('stockChart').getContext('2d');
+const stockChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+        datasets: [{
+            data: [{{ in_stock_count }}, {{ low_stock_count }}, {{ out_of_stock_count }}],
+            backgroundColor: [
+                'rgba(40, 167, 69, 0.8)',
+                'rgba(255, 193, 7, 0.8)',
+                'rgba(220, 53, 69, 0.8)'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                    padding: 20,
+                    font: {
+                        size: 11
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Delete confirmation
+function confirmDelete(productId) {
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    deleteBtn.href = `/shops/product/${productId}/delete/`;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Refresh dashboard data
+function refreshDashboard() {
+    axios.get('{% url "shops:dashboard" %}?refresh=true')
+        .then(response => {
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error refreshing dashboard:', error);
+        });
+}
+
+// Update stock levels periodically (every 5 minutes)
+setInterval(() => {
+    axios.get('{% url "shops:dashboard" %}?partial=true')
+        .then(response => {
+            document.getElementById('total-products').textContent = response.data.total_products;
+            document.getElementById('active-products').textContent = response.data.active_products;
+            document.getElementById('low-stock').textContent = response.data.low_stock_products;
+            document.getElementById('out-of-stock').textContent = response.data.out_of_stock_products;
+            
+            // Update chart data
+            stockChart.data.datasets[0].data = [
+                response.data.in_stock_count,
+                response.data.low_stock_count,
+                response.data.out_of_stock_count
+            ];
+            stockChart.update();
+        })
+        .catch(error => {
+            console.error('Error updating dashboard:', error);
+        });
+}, 300000); // 5 minutes
+</script>
+
+<style>
+    /* Meteor Dashboard Styles */
+    .card {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(114, 105, 239, 0.1);
+    }
+    
+    .bg-opacity-10 {
+        background-opacity: 0.1;
+    }
+    
+    .bg-opacity-25 {
+        background-opacity: 0.25;
+    }
+    
+    .list-unstyled li {
+        padding: 0.5rem 0;
+    }
+    
+    .progress {
+        border-radius: 4px;
+    }
+    
+    .progress-bar {
+        border-radius: 4px;
+    }
+    .card-body {
+        overflow: hidden;
+    }
+    #stockChart {
+        width: 100% !important;
+        height: 200px !important;
+    }
+</style>
 {% endblock %}

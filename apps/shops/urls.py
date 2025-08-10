@@ -15,4 +15,6 @@ urlpatterns = [
     path('change/password/', views.change_password, name='change_password'),
     path('settings/', views.settings_view, name='settings'),
     # other URLs...
+    path('search/', views.shop_search, name='shop_search'),
+    path('search/suggestions/', views.shop_search_suggestions, name='shop_search_suggestions'),
 ]

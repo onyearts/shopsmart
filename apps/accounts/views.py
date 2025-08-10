@@ -21,13 +21,37 @@ def is_ajax(request):
            request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
 
+import logging
+from django.core.mail import EmailMessage
+
+logger = logging.getLogger(__name__)
+
 def send_verification_email(email, code):
-    print(f"DEBUG: Sending verification code {code} to {email}")
-    subject = 'Verify Your Email - ShopSmart'
-    message = f'Your ShopSmart verification code is: {code}\nPlease enter this code to complete your registration. \nThis code is valid for 15 minutes. If you did not request this, please ignore this email.'
-    from_email = settings.DEFAULT_FROM_EMAIL
-    recipient_list = [email]
-    send_mail(subject, message, from_email, recipient_list)
+    try:
+        subject = 'Verify Your Email - ShopSmart'
+        message = f'''
+        Your ShopSmart verification code is: 
+        
+        {code}
+        
+        Please enter this code to complete your registration.
+        This code is valid for 15 minutes.
+        
+        If you did not request this, please ignore this email.
+        '''
+        
+        email = EmailMessage(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+        )
+        email.send(fail_silently=False)
+        logger.info(f"Verification email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send email to {email}: {str(e)}")
+        return False
 
 
 def register_customer(request):
@@ -362,3 +386,5 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('landing:index')
+
+

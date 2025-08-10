@@ -1,145 +1,186 @@
 {% extends 'shop/base.html' %}
+{% load static %}
 
 {% block content %}
-
 <!-- Load Axios CDN -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-<div class="page-header">
-              <h3 class="page-title"> My Products </h3>
-              <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="#">Products Listing Table</a></li>
-                  <li class="breadcrumb-item active" aria-current="page">My Products</li>
-                </ol>
-              </nav>
-            </div>
-            <div class="row">
-              <div class="col-lg-12 grid-margin stretch-card">
+
+<div class="page-container">
+    <div class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="mb-1">
+                            <i class="ri-store-2-line me-2"></i> My Products
+                        </h3>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{% url 'shops:dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Products</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <a href="{% url 'shops:product_add_edit' %}" class="btn btn-primary">
+                        <i class="ri-add-circle-line me-1"></i> Add Product
+                    </a>
+                </div>
+
+                <!-- Product Table Card -->
                 <div class="card">
-                  <div class="card-body">
-                    <h4 class="card-title">Basic Table</h4>
-                    <p class="card-description"> Add class <code>.table</code>
-                    </p>
-                    {% if products %}
+                    <div class="card-body">
+                        {% if products %}
                         <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
+                            <table class="table table-hover">
+                                <thead class="table-light">
                                     <tr>
                                         <th>Image</th>
                                         <th>Name</th>
                                         <th>Price</th>
                                         <th>Stock</th>
-                                        <th>City</th>
-                                        <th>Active</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for product in products %}
-                                    <tr>
+                                    <tr id="product-row-{{ product.id }}">
                                         <td>
                                             {% if product.image %}
-                                                <img src="{{ product.image.url }}" alt="{{ product.name }}" width="50">
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                                class="rounded" width="50" height="50" style="object-fit: cover;">
                                             {% else %}
-                                                <span class="text-muted">No Image</span>
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                                style="width:50px;height:50px;">
+                                            <i class="ri-image-line text-muted"></i>
+                                            </div>
                                             {% endif %}
                                         </td>
-                                        <td>{{ product.name }}</td>
+                                        <td><span class="fw-semibold">{{ product.name }}</span></td>
                                         <td>Gh₵{{ product.price }}</td>
                                         <td>{{ product.stock }}</td>
-                                        <td>{{ product.city }}</td>
                                         <td>
                                             {% if product.is_active %}
-                                                <span class="badge bg-success">Yes</span>
+                                            <span class="badge bg-success rounded-pill">
+                                                <i class="ri-checkbox-circle-line me-1"></i> Active
+                                            </span>
                                             {% else %}
-                                                <span class="badge bg-danger">No</span>
+                                            <span class="badge bg-danger rounded-pill">
+                                                <i class="ri-close-circle-line me-1"></i> Inactive
+                                            </span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                          <button class="btn btn-sm btn-info" onclick="viewProduct({{ product.id }})">View</button>
-                                          <button class="btn btn-sm btn-warning" onclick="editProduct({{ product.id }})">Edit</button>
-                                          <button class="btn btn-sm btn-danger" onclick="deleteProduct({{ product.id }}, 'product-row-{{ product.id }}')">Delete</button>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-sm btn-outline-info" onclick="viewProduct({{ product.id }})">
+                                                    <i class="ri-eye-line"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning" onclick="editProduct({{ product.id }})">
+                                                    <i class="ri-pencil-line"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct({{ product.id }}, 'product-row-{{ product.id }}')">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                            </div>
                                         </td>
-                                      </tr>
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                         {% else %}
-                        <p class="text-muted">You haven't added any products yet.</p>
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="ri-shopping-basket-line text-muted" style="font-size: 5rem;"></i>
+                            </div>
+                            <h4 class="text-muted">No Products Found</h4>
+                            <p class="text-muted">You haven't added any products yet.</p>
+                            <a href="{% url 'shops:product_add_edit' %}" class="btn btn-primary mt-3">
+                                <i class="ri-add-line me-1"></i> Add Your First Product
+                            </a>
+                        </div>
                         {% endif %}
                     </div>
-                  </div>
                 </div>
-            
-<!-- Modal for View/Edit -->
-<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered" >
-    <div class="modal-content">
-      <form id="product-modal-form">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title" id="productModalLabel">Product Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
         </div>
-        <div class="modal-body">
-          <input type="hidden" id="modalProductId">
-          <div class="mb-3">
-            <label>Name</label>
-            <input type="text" id="modalName" name="name" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label>Description</label>
-            <textarea id="modalDescription" name="description" class="form-control"></textarea>
-          </div>
-          <div class="mb-3">
-            <label>Price</label>
-            <input type="number" id="modalPrice" name="price" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label>Stock</label>
-            <input type="number" id="modalStock" name="stock" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label>City</label>
-            <input type="text" id="modalCity" name="city" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label>Extra Note</label>
-            <textarea id="modalNote" name="extra_note" class="form-control"></textarea>
-          </div>
-          <div class="mb-3">
-            <label>Status</label>
-            <select id="modalActive" name="is_active" class="form-select">
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
-          </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="product-modal-form">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="modalProductId">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" id="modalName" name="name" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Price</label>
+                                    <input type="number" id="modalPrice" name="price" class="form-control" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    <textarea id="modalDescription" name="description" class="form-control" rows="3"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Stock</label>
+                                    <input type="number" id="modalStock" name="stock" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Status</label>
+                                    <select id="modalActive" name="is_active" class="form-select">
+                                        <option value="true">Active</option>
+                                        <option value="false">Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Extra Note</label>
+                                    <textarea id="modalNote" name="extra_note" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </form>
+
     </div>
-  </div>
+
 </div>
 
 <style>
-/* Make disabled inputs look readable in view mode */
-.modal-body input[disabled],
-.modal-body textarea[disabled],
-.modal-body select[disabled] {
-  background-color:rgb(38, 44, 49) !important; /* light background */
-  color:rgb(255, 255, 255) !important; /* dark readable text */
-  border-color:rgba(8, 150, 15, 0.55);
-}
+  /* Meteor-inspired styles */
+  .table-hover tbody tr:hover {
+    background-color: rgba(114, 105, 239, 0.1);
+  }
+  .modal-body input[disabled],
+  .modal-body textarea[disabled],
+  .modal-body select[disabled] {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    border-color: #dee2e6;
+  }
+  .btn-outline-info { color: #3b82f6; border-color: #3b82f6; }
+  .btn-outline-warning { color: #f59e0b; border-color: #f59e0b; }
+  .btn-outline-danger { color: #ef4444; border-color: #ef4444; }
 </style>
 
-
-
 <script>
+// Your existing JavaScript functions remain exactly the same
 function viewProduct(productId) {
   axios.get(`/shops/product/${productId}/json/`)
     .then(res => {
@@ -175,27 +216,22 @@ function deleteProduct(productId, rowId) {
         });
 }
 
-
 function fillModalFields(data, editable) {
   document.getElementById('modalProductId').value = data.id;
   document.getElementById('modalName').value = data.name;
   document.getElementById('modalDescription').value = data.description;
   document.getElementById('modalPrice').value = data.price;
   document.getElementById('modalStock').value = data.stock;
-  document.getElementById('modalCity').value = data.city;
   document.getElementById('modalNote').value = data.extra_note;
   document.getElementById('modalActive').value = data.is_active ? 'true' : 'false';
 
-  // Set form readonly/view-only
   document.querySelectorAll('#product-modal-form input, textarea, select').forEach(el => {
     el.disabled = !editable;
   });
 
-  // Show submit button only in edit mode
   document.querySelector('#product-modal-form button[type="submit"]').style.display = editable ? 'inline-block' : 'none';
 }
 
-// Handle modal form submission
 document.getElementById('product-modal-form').addEventListener('submit', function (e) {
   e.preventDefault();
   const productId = document.getElementById('modalProductId').value;
@@ -204,11 +240,10 @@ document.getElementById('product-modal-form').addEventListener('submit', functio
   axios.post(`/shops/product/${productId}/edit/`, formData)
     .then(() => {
       bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-      location.reload(); // optional: refresh list
+      location.reload();
     });
 });
 
-// shows toast
 function showToast(message, type = "success") {
     let container = document.getElementById("toast-container");
     if (!container) {
@@ -236,9 +271,6 @@ function showToast(message, type = "success") {
         toast.remove();
     }, 4000);
 }
-
 </script>
-
-
 
 {% endblock %}

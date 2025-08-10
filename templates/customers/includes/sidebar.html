@@ -1,111 +1,167 @@
-<!-- partial:partials/_sidebar.html -->
 {% load static %}
 
-<nav class="sidebar sidebar-offcanvas" id="sidebar">
-  <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
-    <a class="sidebar-brand brand-logo" href="{% url 'customers:dashboard' %}">
-      <img src="{% static 'assets/images/logo.svg' %}" alt="logo" />
-    </a>
-    <a class="sidebar-brand brand-logo-mini" href="{% url 'customers:dashboard' %}">
-      <img src="{% static 'assets/images/logo-mini.svg' %}" alt="logo" />
-    </a>
-  </div>
-  <ul class="nav">
-    <!-- Profile Dropdown -->
-    <li class="nav-item profile">
-      <div class="profile-desc">
-        <div class="profile-pic">
-          <div class="count-indicator">
-            <img class="img-xs rounded-circle" src="{{ request.user.profile_picture.url }}" alt="">
-            <span class="count bg-success"></span>
+<div class="main-nav">
+    <!-- Sidebar Logo -->
+    <div class="logo-box">
+         <a href="{% url 'landing:index' %}" class="logo-dark">
+              <img src="{% static 'frontend/assets/images/eketex_favicon.png' %}" class="logo-sm" alt="logo sm">
+              <img src="{% static 'frontend/assets/images/eketex_favicon.png' %}" class="logo-lg" alt="logo dark">
+         </a>
+
+         <a href="{% url 'landing:index' %}" class="logo-light">
+              <img src="{% static 'frontend/assets/images/eketex_logo2.png' %}" class="logo-sm" alt="logo sm">
+              <img src="{% static 'frontend/assets/images/eketex_logo2.png' %}" class="logo-lg" alt="logo light">
+         </a>
+    </div>
+
+    <!-- Message display area -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+     {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+               {{ message }}
+               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
-          <div class="profile-name">
-            <h5 class="mb-0 font-weight-normal">{{ request.user.get_full_name|default:request.user.username }}</h5>
-            <span>Customer</span>
-          </div>
-        </div>
-        <a href="#" id="profile-dropdown" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
-        <div class="dropdown-menu dropdown-menu-right sidebar-dropdown preview-list" aria-labelledby="profile-dropdown">
-          <a href="{% url 'shops:profile' %}" class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-dark rounded-circle">
-                <i class="mdi mdi-account text-primary"></i>
-              </div>
-            </div>
-            <div class="preview-item-content">
-              <p class="preview-subject ellipsis mb-1 text-small">Profile Settings</p>
-            </div>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="{% url 'shops:change_password' %}" class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-dark rounded-circle">
-                <i class="mdi mdi-lock text-info"></i>
-              </div>
-            </div>
-            <div class="preview-item-content">
-              <p class="preview-subject ellipsis mb-1 text-small">Change Password</p>
-            </div>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="{% url 'accounts:logout' %}" class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-dark rounded-circle">
-                <i class="mdi mdi-logout text-danger"></i>
-              </div>
-            </div>
-            <div class="preview-item-content">
-              <p class="preview-subject ellipsis mb-1 text-small">Logout</p>
-            </div>
-          </a>
-        </div>
-      </div>
-    </li>
+          {% endfor %}
+     {% endif %}
+    </div>
 
-    <!-- Navigation -->
-    <li class="nav-item nav-category">
-      <span class="nav-link">Navigation</span>
-    </li>
 
-    <!-- Dashboard -->
-    <li class="nav-item menu-items">
-      <a class="nav-link" href="{% url 'customers:dashboard' %}">
-        <span class="menu-icon"><i class="mdi mdi-speedometer"></i></span>
-        <span class="menu-title">Dashboard</span>
-      </a>
-    </li>
+    <div class="h-100" data-simplebar>
 
-    <!-- products -->
-    <li class="nav-item menu-items">
-      <a class="nav-link" href="{% url 'customers:product_list' %}">
-        <span class="menu-icon"><i class="mdi mdi-menu"></i></span>
-        <span class="menu-title">products</span>
-      </a>
-    </li>
+    <ul class="navbar-nav" id="navbar-nav">
 
-    <!-- Wishlist -->
-    <li class="nav-item menu-items">
-      <a class="nav-link" href="{% url 'customers:wishlist' %}">
-        <span class="menu-icon"><i class="mdi mdi-heart-outline"></i></span>
-        <span class="menu-title">Wishlist</span>
-      </a>
-    </li>
+        <li class="menu-item pt-2">
+            <a class="menu-link" href="{% url 'customers:dashboard' %}">
+                <span class="nav-icon">
+                    <i class="ri-dashboard-2-line"></i>
+                </span>
+                <span class="nav-text"> Dashboard </span>
+                <span class="badge bg-success badge-pill text-end">9+</span>
+            </a>
+        </li>
 
-    <!-- My Orders -->
-    <li class="nav-item menu-items">
-      <a class="nav-link" href="">
-        <span class="menu-icon"><i class="mdi mdi-cart-outline"></i></span>
-        <span class="menu-title">Messages</span>
-      </a>
-    </li>
+        <li class="menu-item">
+            <a class="menu-link" href="{% url 'customers:product_list' %}">
+                <span class="nav-icon">
+                    <i class="ri-shopping-cart-line"></i>
+                </span>
+                <span class="nav-text">Products</span>
+            </a>
+            {% if request.resolver_match.url_name == 'product_detail' %}
+            <ul class="sub-menu">
+                <li class="sub-menu-item">
+                    <a class="sub-menu-link" href="{% url 'customers:product_detail' product.id %}">
+                        <span class="nav-icon">
+                            <i class="ri-arrow-right-s-line"></i>
+                        </span>
+                        <span class="nav-text">{{ product.name|truncatechars:20 }}</span>
+                    </a>
+                </li>
+            </ul>
+            {% endif %}
+        </li>
 
-    <!-- Profile -->
-    <li class="nav-item menu-items">
-      <a class="nav-link" href="">
-        <span class="menu-icon"><i class="mdi mdi-account-circle-outline"></i></span>
-        <span class="menu-title">Profile</span>
-      </a>
-    </li>
-  </ul>
-</nav>
-<!-- partial -->
+        <li class="menu-item">
+            <a class="menu-link" href="{% url 'customers:wishlist' %}">
+                <span class="nav-icon">
+                    <i class="ri-heart-line"></i>
+                </span>
+                <span class="nav-text">Wishlist</span>
+            </a>
+        </li>
+
+        <li class="menu-item">
+            <a class="menu-link" href="customer.html">
+                <span class="nav-icon">
+                    <i class="ri-user-line"></i>
+                </span>
+                <span class="nav-text"> Profile </span>
+            </a>
+        </li>
+
+         <li class="menu-item mt-auto">
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="menu-link border-0 bg-transparent w-100 text-start">
+                    <span class="nav-icon"><i class="ri-logout-box-line"></i></span>
+                    <span class="nav-text">Logout</span>
+                </button>
+            </form>
+        </li>
+
+    </ul>
+    </div>
+</div>
+
+
+<style>
+    /* Submenu Styling */
+.sub-menu {
+    padding-left: 15px;
+    margin-top: 5px;
+    list-style: none;
+    display: none;
+}
+
+.menu-item.active .sub-menu,
+.menu-item:hover .sub-menu {
+    display: block;
+}
+
+.sub-menu-item {
+    margin-bottom: 3px;
+}
+
+.sub-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    color: #6c757d;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.sub-menu-link:hover {
+    background-color: rgba(74, 107, 255, 0.1);
+    color: #4a6bff;
+}
+
+.sub-menu-link .nav-icon {
+    margin-right: 8px;
+    font-size: 0.9rem;
+}
+
+.submenu-arrow {
+    transition: transform 0.3s;
+    font-size: 1rem;
+}
+
+.menu-item.active .submenu-arrow,
+.menu-item:hover .submenu-arrow {
+    transform: rotate(90deg);
+}
+</style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Highlight active menu item
+    const currentUrl = window.location.pathname;
+    document.querySelectorAll('.menu-link').forEach(link => {
+        if (link.getAttribute('href') === currentUrl) {
+            link.closest('.menu-item').classList.add('active');
+        }
+    });
+    
+    // Toggle submenus
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (e.target.closest('.menu-link') && this.querySelector('.sub-menu')) {
+                this.classList.toggle('active');
+            }
+        });
+    });
+});
+</script>

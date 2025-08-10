@@ -3,90 +3,183 @@
 {% load static %}
 
 {% block content %}
+<div class="page-container">
+    <div class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="page-title mb-1">
+                            <i class="ri-user-settings-line me-2"></i> Edit Profile
+                        </h3>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{% url 'shops:dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'shops:profile' %}">Profile</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
 
-<div class="card">
-  <div class="card-body">
-    <h4 class="card-title">Edit Profile</h4>
-    <p class="card-description"> Update your basic information </p>
+                <!-- Edit Profile Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title">
+                            <i class="ri-edit-box-line me-2"></i> Update Your Information
+                        </h4>
+                        <p class="card-description text-muted mb-4">
+                            Keep your profile details current and accurate
+                        </p>
 
-    <form id="edit-profile-form" method="POST" enctype="multipart/form-data" class="forms-sample">
-      {% csrf_token %}
-
-      <div class="form-group">
-        <label for="first_name">First Name</label>
-        {{ user_form.first_name|add_class:"form-control" }}
-      </div>
-
-      <div class="form-group">
-        <label for="last_name">Last Name</label>
-        {{ user_form.last_name|add_class:"form-control" }}
-      </div>
-
-      <div class="form-group">
-        <label for="profile_picture">Profile Picture</label><br>
-        {{ user_form.profile_picture|add_class:"form-control" }}
-      </div>
-
-      {% if is_shop_owner %}
-        <div class="form-group">
-          <label for="shop_name">Shop Name</label>
-          {{ profile_form.shop_name|add_class:"form-control" }}
+                        <form id="edit-profile-form" method="POST" enctype="multipart/form-data" class="forms-sample">
+                            {% csrf_token %}
+                            
+                            <div class="row g-3">
+                                <!-- Personal Info Section -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-user-3-line me-1"></i> First Name
+                                        </label>
+                                        {{ user_form.first_name|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-user-3-line me-1"></i> Last Name
+                                        </label>
+                                        {{ user_form.last_name|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-image-line me-1"></i> Profile Picture
+                                        </label>
+                                        {{ user_form.profile_picture|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Shop Owner Specific Fields -->
+                                {% if is_shop_owner %}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-store-2-line me-1"></i> Shop Name
+                                        </label>
+                                        {{ profile_form.shop_name|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-phone-line me-1"></i> Phone
+                                        </label>
+                                        {{ profile_form.phone|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-map-pin-line me-1"></i> Address
+                                        </label>
+                                        {{ profile_form.address|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-mail-line me-1"></i> Postal Code
+                                        </label>
+                                        {{ profile_form.postal_code|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-building-line me-1"></i> City
+                                        </label>
+                                        {{ profile_form.city|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-map-2-line me-1"></i> Map Address (Auto-filled)
+                                        </label>
+                                        {{ profile_form.map_address|add_class:"form-control"|attr:"readonly:readonly" }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Map Section -->
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-map-pin-2-line me-1"></i> Click on map to set shop location
+                                        </label>
+                                        <div id="map-container" class="rounded shadow-sm mb-3" style="width: 100%; height: 400px; overflow: hidden;">
+                                            <div id="map" style="width: 100%; height: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <input type="hidden" id="latitude" name="latitude" value="{{ profile_form.latitude.value }}">
+                                <input type="hidden" id="longitude" name="longitude" value="{{ profile_form.longitude.value }}">
+                                
+                                {% else %}
+                                <!-- Customer Specific Fields -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-phone-line me-1"></i> Phone
+                                        </label>
+                                        {{ profile_form.phone|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-map-pin-user-line me-1"></i> Preferred Location
+                                        </label>
+                                        {{ profile_form.preferred_location|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Form Actions -->
+                                <div class="col-12 mt-4">
+                                    <button type="submit" id="save-btn" class="btn btn-primary me-2">
+                                        <span id="save-text">
+                                            <i class="ri-save-line me-1"></i> Save Changes
+                                        </span>
+                                        <span id="save-loader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                    <a href="{% url 'shops:profile' %}" class="btn btn-outline-secondary">
+                                        <i class="ri-close-line me-1"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-          <label for="phone">Phone</label>
-          {{ profile_form.phone|add_class:"form-control" }}
-        </div>
-
-        <div class="form-group">
-          <label for="address">Address</label>
-          {{ profile_form.address|add_class:"form-control" }}
-        </div>
-
-        <div class="form-group">
-          <label for="postal_code">Postal Code</label>
-          {{ profile_form.postal_code|add_class:"form-control" }}
-        </div>
-
-        <div class="form-group">
-          <label for="city">City</label>
-          {{ profile_form.city|add_class:"form-control" }}
-        </div>
-
-        <div class="form-group">
-          <label for="map_address">Map Address</label>
-          {{ profile_form.map_address|add_class:"form-control" }}
-        </div>
-
-
-        <!-- Map untouched -->
-        <div class="form-group">
-          <label>Pick Your Shop Location</label>
-          <div id="map-container" class="rounded shadow-sm mb-3" style="width: 100%; height: 500px; overflow: hidden;">
-            <div id="map" style="width: 100%; height: 100%;"></div>
-          </div>
-        </div>
-
-        <input type="hidden" id="latitude" name="latitude" value="{{ profile_form.latitude.value }}">
-        <input type="hidden" id="longitude" name="longitude" value="{{ profile_form.longitude.value }}">
-      {% else %}
-        <div class="form-group">
-          <label for="phone">Phone</label>
-          {{ profile_form.phone|add_class:"form-control" }}
-        </div>
-
-        <div class="form-group">
-          <label for="preferred_location">Preferred Location</label>
-          {{ profile_form.preferred_location|add_class:"form-control" }}
-        </div>
-      {% endif %}
-
-      <button type="submit" class="btn btn-primary me-2">Save Changes</button>
-      <a href="{% url 'shops:profile' %}" class="btn btn-dark">Cancel</a>
-    </form>
-  </div>
+    </div>
 </div>
 
+<!-- Toast Container -->
+<div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
 
 {% if is_shop_owner %}
 <!-- Leaflet JS -->
@@ -118,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     map.setMaxBounds(bounds);
 
     let marker;
+    const mapAddressField = document.getElementById('id_map_address');
 
     // Function to update marker on the map
     function setMarker(lat, lng) {
@@ -142,47 +236,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const { lat, lng } = e.latlng;
         setMarker(lat, lng);
 
-        // Reverse geocode using Nominatim
+        // Show loading state for address lookup
+        mapAddressField.value = "Loading address...";
+        
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
             const data = await res.json();
-            const address = data.display_name || '';
-            const addressInput = document.getElementById("id_map_address");
-            if (addressInput) addressInput.value = address;
+            const address = data.display_name || 'Address not found';
+            mapAddressField.value = address;
         } catch (error) {
             console.error("Failed to fetch address", error);
+            mapAddressField.value = "Could not retrieve address";
         }
-    });
-
-    // Auto-geocode when postal code or address changes
-    const addressField = document.getElementById('id_address');
-    const postalCodeField = document.getElementById('id_postal_code');
-    const cityField = document.getElementById('id_city');
-
-    async function geocodeAddress() {
-        const address = addressField ? addressField.value.trim() : '';
-        const postal = postalCodeField ? postalCodeField.value.trim() : '';
-        const city = cityField ? cityField.value.trim() : '';
-
-        if (!address && !postal && !city) return;
-
-        const query = `${address}, ${postal}, ${city}, Ghana`;
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            if (data && data.length > 0) {
-                const { lat, lon } = data[0];
-                setMarker(lat, lon);
-            } else {
-                showToast("Address not found. Please check details.", "warning");
-            }
-        } catch (error) {
-            console.error("Geocoding error:", error);
-        }
-    }
-
-    [addressField, postalCodeField, cityField].forEach(field => {
-        if (field) field.addEventListener('blur', geocodeAddress);
     });
 
     // Preload marker if coordinates exist
@@ -191,15 +256,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isNaN(lat) && !isNaN(lng)) {
         if (bounds.contains([lat, lng])) {
             setMarker(lat, lng);
+            // Load address if coordinates exist but field is empty
+            if (mapAddressField && !mapAddressField.value) {
+                map.on('click', {latlng: L.latLng(lat, lng)});
+            }
         }
     }
 });
 </script>
-
 {% endif %}
 
-
-<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
 document.getElementById('edit-profile-form').addEventListener('submit', async function(e) {
@@ -207,6 +273,14 @@ document.getElementById('edit-profile-form').addEventListener('submit', async fu
 
     const form = e.target;
     const formData = new FormData(form);
+    const saveBtn = document.getElementById('save-btn');
+    const saveText = document.getElementById('save-text');
+    const saveLoader = document.getElementById('save-loader');
+
+    // Show loader
+    saveBtn.disabled = true;
+    saveLoader.classList.remove('d-none');
+    saveText.innerHTML = '<i class="ri-loader-4-line me-1"></i> Saving...';
 
     try {
         const response = await axios.post("", formData, {
@@ -230,6 +304,11 @@ document.getElementById('edit-profile-form').addEventListener('submit', async fu
         } else {
             showToast("Failed to update profile. Please check your inputs.", "danger");
         }
+    } finally {
+        // Hide loader
+        saveBtn.disabled = false;
+        saveLoader.classList.add('d-none');
+        saveText.innerHTML = '<i class="ri-save-line me-1"></i> Save Changes';
     }
 });
 
@@ -244,7 +323,9 @@ function showToast(message, type = "success") {
         <div class="d-flex">
             <div class="toast-body">${message}</div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>`;
+        </div>
+        <div class="toast-progress bg-white opacity-25" style="height: 3px; animation: shrink 4s linear forwards;"></div>
+    `;
     container.appendChild(toast);
 
     // Auto-remove after 4 seconds
@@ -255,6 +336,51 @@ function showToast(message, type = "success") {
 }
 </script>
 
-
+<style>
+    /* Meteor-inspired styling */
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    
+    #map-container {
+        border-radius: 0.75rem;
+    }
+    
+    @keyframes shrink {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+    
+    .toast {
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    
+    #save-btn {
+        min-width: 120px;
+    }
+    
+    .spinner-border {
+        vertical-align: middle;
+    }
+</style>
 
 {% endblock %}

@@ -1,46 +1,67 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% include 'shop/includes/head.html' %}
-    {% block extra_css %}{% endblock %}
+    {% load static %}
+    <!-- Title Meta -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'frontend/assets/images/eketex_favicon.png' %}">
 
+    <title>{% block title %}ShopSmart{% endblock %}</title>
+
+    {% include 'shop/includes/head.html' %}
 </head>
 <body>
-    <div class="container-scroller">
-        {% include 'shop/includes/header.html' %}
-            {% include 'shop/includes/sidebar.html' %}
-            <div class="main-panel">
-                <div class="content-wrapper">
-                    {% block content %}{% endblock %}
-                </div>
-                {% include 'shop/includes/footer.html' %}
-            </div>
-    </div>
-    {% include 'shop/includes/scripts.html' %}
-    {% block extra_js %}{% endblock %}
-
-    <script>
-        // In your base template or a JS file
-        $(document).ready(function() {
-            // Remove active class from all items first
-            $('.nav-item').removeClass('active');
+    <div class="wrapper">
+        {% include 'shop/includes/sidebar.html' %}
+        <div class="content-page">
+            {% include 'shop/includes/topbar.html' %}
             
-            // Add active class to current item
-            $('.nav-item a[href="'+window.location.pathname+'"]').parent().addClass('active');
-        });
+            <div class="container-fluid px-3 py-3">
+                {% block content %}{% endblock %}
+            </div>
 
-        // Add active class to current menu item
-        $('.nav-item a').each(function() {
-            var href = $(this).attr('href').replace(/\/$/, "");
-            if (path === href) {
-                $(this).parent().addClass('active');
-                // Also activate parent items for dropdown menus
-                $(this).closest('.collapse').addClass('show');
-                $(this).closest('.nav-item').addClass('active');
+            {% include 'shop/includes/footer.html' %}
+        </div>
+    </div>
+
+    {% include 'shop/includes/scripts.html' %}
+</body>
+
+<script>
+    // For both shop and customer search suggestions
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForms = document.querySelectorAll('.app-search');
+    
+    searchForms.forEach(form => {
+        const input = form.querySelector('input[type="search"]');
+        
+        input.addEventListener('input', function(e) {
+            // You can add debounce here if needed
+            if (this.value.length >= 2) {
+                // For shop owners
+                if (form.action.includes('shops')) {
+                    fetch(`{% url 'shops:shop_search_suggestions' %}?q=${encodeURIComponent(this.value)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Handle suggestions
+                        });
+                } 
+                // For customers
+                else {
+                    fetch(`{% url 'customers:search_suggestions' %}?q=${encodeURIComponent(this.value)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Handle suggestions
+                        });
+                }
             }
         });
-    </script>
-    
-</body>
+    });
+});
+</script>
 </html>

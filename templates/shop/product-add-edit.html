@@ -1,89 +1,173 @@
 {% extends 'shop/base.html' %}
+{% load static %}
 
 {% block content %}
-   
-    <div class="page-header">
-        <h3 class="page-title">Add/Edit Products</h3>
-    </div>
+<div class="page-container">
+    <div class="page-content">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="page-title mb-1">
+                            <i class="ri-add-box-line me-2"></i> Add/Edit Product
+                        </h3>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{% url 'shops:dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'shops:product_list' %}">Products</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">{% if product %}Edit{% else %}Add{% endif %}</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
 
-    <div class="card">
-    <div class="card-body">
-    <h4 class="card-title">Add and edit products here</h4>
-    <p class="card-description"> Add and edit products to be displayed on the dashboard or under you shop name when customer search for your products </p>
-    <form class="forms-sample" id="product-form" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
+                <!-- Product Form Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title">
+                            <i class="ri-shopping-bag-3-line me-2"></i> Product Details
+                        </h4>
+                        <p class="card-description text-muted mb-4">
+                            Add or edit products to be displayed on your shop dashboard
+                        </p>
+                        
+                        <form class="forms-sample" id="product-form" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+                            
+                            <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
 
-    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
-
-    <div class="form-group">
-        <label>Product Name</label>
-        {{ form.name }}
-    </div>
-
-    <div class="form-group">
-        <label>Description</label>
-        {{ form.description }}
-    </div>
-
-    <div class="form-group">
-        <label>Price</label>
-        {{ form.price }}
-    </div>
-
-    <div class="form-group">
-        <label>Stock</label>
-        {{ form.stock }}
-    </div>
-
-    <div class="form-group">
-        <label>Upload Image</label>
-        {{ form.image }}
-    </div>
-
-    <div class="form-group">
-        <label>Extra Notes</label>
-        {{ form.extra_note }}
-    </div>
-
-    <div class="form-check mb-3">
-        {{ form.is_active }} <label class="form-check-label">Is Active</label>
-    </div>
-
-    <button type="submit" id="submit-btn" class="btn btn-primary me-2">
-        <span id="submit-text">Submit</span>
-        <span id="submit-loader" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
-    </button>
-
-    <a href="{% url 'shops:dashboard' %}" class="btn btn-dark">Cancel</a>
-</form>
-    </div>
-    </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-product-hunt-line me-1"></i> Product Name
+                                        </label>
+                                        {{ form.name }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-money-dollar-circle-line me-1"></i> Price
+                                        </label>
+                                        {{ form.price }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-file-text-line me-1"></i> Description
+                                        </label>
+                                        {{ form.description }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-stack-line me-1"></i> Stock
+                                        </label>
+                                        {{ form.stock }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-image-line me-1"></i> Product Image
+                                        </label>
+                                        {{ form.image }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="ri-sticky-note-line me-1"></i> Extra Notes
+                                        </label>
+                                        {{ form.extra_note }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                               Active Status
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" id="submit-btn" class="btn btn-primary me-2">
+                                    <span id="submit-text">
+                                        <i class="ri-save-line me-1"></i> Submit
+                                    </span>
+                                    <span id="submit-loader" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                                </button>
+                                
+                                <a href="{% url 'shops:product_list' %}" class="btn btn-outline-secondary">
+                                    <i class="ri-close-line me-1"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <style>
-.toast {
-    opacity: 1;
-    transition: opacity 0.5s ease-in-out;
-}
-.toast.fade-out {
-    opacity: 0;
-}
-.toast-progress {
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.8);
-    animation: shrink 4s linear forwards;
-}
-@keyframes shrink {
-    from { width: 100%; }
-    to { width: 0%; }
-}
+    /* Meteor-inspired styling */
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+        border: none;
+    }
+    
+    .toast {
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    
+    .toast-progress {
+        height: 3px;
+        background-color: rgba(255, 255, 255, 0.8);
+        animation: shrink 4s linear forwards;
+    }
+    
+    @keyframes shrink {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
 </style>
 
 <script>
+// Your existing JavaScript remains exactly the same
 document.getElementById('product-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -96,7 +180,7 @@ document.getElementById('product-form').addEventListener('submit', async functio
     // Show loader
     submitBtn.disabled = true;
     submitLoader.classList.remove('d-none');
-    submitText.textContent = 'Saving...';
+    submitText.innerHTML = '<i class="ri-loader-4-line me-1"></i> Saving...';
 
     try {
         const response = await axios.post("{% url 'shops:product_add_edit' %}", formData, {
@@ -107,17 +191,17 @@ document.getElementById('product-form').addEventListener('submit', async functio
         });
 
         if (response.status === 200 || response.status === 201) {
-            showToast("Product submitted successfully!", "success");
-            form.reset();
+            showToast("Product saved successfully!", "success");
+            {% if not product %}form.reset();{% endif %}
         }
     } catch (error) {
         console.error(error);
-        showToast("Something went wrong while submitting the product.", "danger");
+        showToast("Error saving product: " + (error.response?.data?.error || "Please check your inputs"), "danger");
     } finally {
         // Hide loader
         submitBtn.disabled = false;
         submitLoader.classList.add('d-none');
-        submitText.textContent = 'Submit';
+        submitText.innerHTML = '<i class="ri-save-line me-1"></i> Submit';
     }
 });
 
@@ -137,7 +221,7 @@ function showToast(message, type = "success", duration = 4000) {
 
     setTimeout(() => {
         toast.classList.add("fade-out");
-        setTimeout(() => toast.remove(), 500); // Wait for fade-out animation
+        setTimeout(() => toast.remove(), 500);
     }, duration);
 }
 
@@ -147,7 +231,5 @@ function removeToast(btn) {
     setTimeout(() => toast.remove(), 500);
 }
 </script>
-
-
 
 {% endblock %}

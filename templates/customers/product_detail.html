@@ -3,73 +3,81 @@
 {% block title %}{{ product.name }} - ShopSmart{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Back Button -->
-    <a href="javascript:history.back()" class="btn btn-outline-secondary mb-3">
-        <i class="fas fa-arrow-left me-2"></i> Back
-    </a>
+<div class="page-container">
+    <div class="page-content">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="ri-arrow-left-line me-2"></i> Back
+            </a>
+        </div>
 
-    <div class="row">
-        <!-- Product Image -->
-        <div class="col-md-5 mb-4">
-            <div class="position-relative" style="border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden;">
-                <img src="{{ product.image.url }}" class="img-fluid w-100" alt="{{ product.name }}" style="height: 400px; object-fit: cover;">
-                {% if user.is_authenticated %}
-                <button class="btn btn-sm position-absolute top-0 end-0 m-2 p-0 bg-transparent border-0 add-wishlist" data-product-id="{{ product.id }}">
-                    <i class="{% if product.id in wishlist_product_ids %}fas{% else %}far{% endif %} fa-heart fa-lg" style="color: {% if product.id in wishlist_product_ids %}red{% else %}white{% endif %}; text-shadow: 0 0 3px rgba(0,0,0,0.5)"></i>
-                </button>
-                {% endif %}
+        <div class="row">
+            <!-- Product Image -->
+            <div class="col-lg-5 mb-4">
+                <div class="card">
+                    <div class="position-relative product-image-container">
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="max-height: 400px; object-fit: contain;">
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-sm position-absolute top-0 end-0 m-2 p-0 bg-transparent border-0 add-wishlist" data-product-id="{{ product.id }}">
+                            <i class="{% if product.id in wishlist_product_ids %}ri-heart-fill{% else %}ri-heart-line{% endif %} fs-18" style="color: {% if product.id in wishlist_product_ids %}red{% else %}white{% endif %}; text-shadow: 0 0 3px rgba(0,0,0,0.5)"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="fw-bold mb-2">{{ product.name }}</h2>
+                        <p class="text-muted mb-4">{{ product.extra_note }}</p>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="ri-store-line text-muted me-2"></i>
+                            <span class="fw-semibold">{{ product.shop_owner.shop_name }}</span>
+                        </div>
+                        
+                        <h3 class="text-primary fw-bold mb-4">GH₵ {{ product.price|floatformat:2 }}</h3>
+                        
+                        <div class="d-flex gap-3 mb-4">
+                            {% if product.stock > 0 and product.is_active %}
+                            <a href="#" class="btn btn-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#contactShopModal">
+                                <i class="ri-phone-line me-2"></i> Contact Shop
+                            </a>
+                            {% else %}
+                            <button class="btn btn-secondary flex-grow-1" disabled>
+                                <i class="ri-forbid-line me-2"></i> Not Available
+                            </button>
+                            {% endif %}
+                            
+                            <a href="#" class="btn btn-outline-secondary">
+                                <i class="ri-map-pin-line me-2"></i> Get Directions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description Section -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Product Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ product.description|linebreaks }}</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Product Details -->
-        <div class="col-md-7">
-            <div class="mb-4">
-                <h2 class="fw-bold mb-1">{{ product.name }}</h2>
-                <p class="text-muted">{{ product.short_description|default:"Premium quality product" }}</p>
-                
-                <div class="d-flex align-items-center mb-3">
-                    <i class="fas fa-store text-muted me-2"></i>
-                    <span class="fw-semibold">{{ product.shop_owner.shop_name }}</span>
-                </div>
-                
-                <h3 class="text-primary fw-bold mb-4">GH₵ {{ product.price|floatformat:2 }}</h3>
-                
-                <div class="d-flex gap-3 mb-4">
-                    {% if product.stock > 0 and product.is_active %}
-                    <a href="#" class="btn btn-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#contactShopModal">
-                        <i class="fas fa-phone-alt me-2"></i> Contact Shop
-                    </a>
-                    {% else %}
-                    <button class="btn btn-secondary flex-grow-1" disabled>
-                        <i class="fas fa-ban me-2"></i> Not Available
-                    </button>
-                    {% endif %}
-                    
-                    <a href="#" class="btn btn-outline-secondary">
-                        <i class="fas fa-directions me-2"></i> Get Directions
-                    </a>
-                </div>
-            </div>
-
-            <!-- Description Section -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Product Details</h5>
-                    <p class="mb-0">{{ product.description|linebreaks }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Customer Reviews Section -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Customer Reviews Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="fas fa-star me-2"></i> Customer Reviews
+                            <i class="ri-star-line me-2"></i> Customer Reviews
                         </h5>
                         {% if user.is_authenticated %}
                             <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
@@ -77,118 +85,118 @@
                             </button>
                         {% endif %}
                     </div>
-
-                    {% if product.reviews.exists %}
-                        {% for review in product.reviews.all|slice:":3" %}
-                        <div class="mb-3 pb-3 border-bottom">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div class="d-flex align-items-center">
-                                    {% with review.user.customerprofile.profile_picture.url as profile_url %}
-                                        <img src="{{ profile_url }}" alt="Profile" class="rounded-circle me-2" width="40" height="40" onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
-                                    {% endwith %}
-                                    <div>
-                                        <span class="fw-semibold">{{ review.user.get_full_name }}</span>
-                                        <div class="small text-warning">
-                                            {% for i in "12345" %}
-                                                {% if forloop.counter <= review.rating %}
-                                                    <i class="fas fa-star"></i>
-                                                {% else %}
-                                                    <i class="far fa-star"></i>
-                                                {% endif %}
-                                            {% endfor %}
+                    <div class="card-body">
+                        {% if product.reviews.exists %}
+                            {% for review in product.reviews.all|slice:":3" %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div class="d-flex align-items-center">
+                                        {% with review.user.customerprofile.profile_picture.url as profile_url %}
+                                            <img src="{{ profile_url }}" alt="Profile" class="rounded-circle me-2" width="40" height="40" onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
+                                        {% endwith %}
+                                        <div>
+                                            <span class="fw-semibold">{{ review.user.get_full_name }}</span>
+                                            <div class="small text-warning">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= review.rating %}
+                                                        <i class="ri-star-fill"></i>
+                                                    {% else %}
+                                                        <i class="ri-star-line"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                     </div>
+                                    <small class="text-muted">{{ review.created_at|timesince }} ago</small>
                                 </div>
-                                <small class="text-muted">{{ review.created_at|timesince }} ago</small>
+                                <p class="mb-0">{{ review.comment }}</p>
                             </div>
-                            <p class="mb-0">{{ review.comment }}</p>
-                        </div>
-                        {% endfor %}
+                            {% endfor %}
 
-                        {% if product.reviews.count > 3 %}
-                        <div class="text-center mt-3">
-                            <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#allReviewsModal">
-                                View all {{ product.reviews.count }} reviews
-                            </a>
-                        </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-comment-slash fa-2x text-muted mb-3"></i>
-                            <p class="text-muted">No reviews yet</p>
-                            {% if user.is_authenticated %}
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
-                                Be the first to review
-                            </button>
+                            {% if product.reviews.count > 3 %}
+                            <div class="text-center mt-3">
+                                <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#allReviewsModal">
+                                    View all {{ product.reviews.count }} reviews
+                                </a>
+                            </div>
                             {% endif %}
-                        </div>
-                    {% endif %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="ri-chat-3-line fs-32 text-muted mb-3"></i>
+                                <p class="text-muted">No reviews yet</p>
+                                {% if user.is_authenticated %}
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                                    Be the first to review
+                                </button>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Review Modal (keep this exactly as is) -->
-    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <form method="POST" action="{% url 'customers:submit_review' product.id %}">
-                {% csrf_token %}
+        <!-- Review Modal -->
+        <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form method="POST" action="{% url 'customers:submit_review' product.id %}">
+                    {% csrf_token %}
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reviewModalLabel">Write a Review</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="id_rating" class="form-label">Rating (1–5)</label>
+                                <input type="number" name="rating" min="1" max="5" class="form-control" id="id_rating" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_comment" class="form-label">Comment</label>
+                                <textarea name="comment" class="form-control" id="id_comment" rows="4" placeholder="Write your review here..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contact Shop Modal -->
+        <div class="modal fade" id="contactShopModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="reviewModalLabel">Write a Review</h5>
+                        <h5 class="modal-title">Contact {{ product.shop_owner.shop_name }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="id_rating" class="form-label">Rating (1–5)</label>
-                            <input type="number" name="rating" min="1" max="5" class="form-control" id="id_rating" required>
+                        <div class="text-center mb-4">
+                            <img src="{{ product.shop_owner.user.profile_picture.url }}" 
+                                 class="rounded-circle border mb-2" 
+                                 width="80" 
+                                 height="80" 
+                                 alt="Shop Owner"
+                                 onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
+                            <h6>{{ product.shop_owner.user.get_full_name }}</h6>
+                            <p class="text-muted small mb-0">
+                                <i class="ri-phone-line me-1"></i> {{ product.shop_owner.phone|default:"Not provided" }}
+                            </p>
                         </div>
-                        <div class="mb-3">
-                            <label for="id_comment" class="form-label">Comment</label>
-                            <textarea name="comment" class="form-control" id="id_comment" rows="4" placeholder="Write your review here..." required></textarea>
-                        </div>
+                        <a href="tel:{{ product.shop_owner.phone }}" class="btn btn-primary w-100 mb-2">
+                            <i class="ri-phone-line me-2"></i> Call Now
+                        </a>
+                        <a href="https://wa.me/{{ product.shop_owner.phone }}" class="btn btn-success w-100">
+                            <i class="ri-whatsapp-line me-2"></i> WhatsApp
+                        </a>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Submit Review</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Contact Shop Modal -->
-    <div class="modal fade" id="contactShopModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Contact {{ product.shop_owner.shop_name }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-4">
-                        <img src="{{ product.shop_owner.user.profile_picture.url }}" 
-                             class="rounded-circle border mb-2" 
-                             width="80" 
-                             height="80" 
-                             alt="Shop Owner"
-                             onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
-                        <h6>{{ product.shop_owner.user.get_full_name }}</h6>
-                        <p class="text-muted small mb-0">
-                            <i class="fas fa-phone me-1"></i> {{ product.shop_owner.phone_number|default:"Not provided" }}
-                        </p>
-                    </div>
-                    <a href="tel:{{ product.shop_owner.phone_number }}" class="btn btn-primary w-100 mb-2">
-                        <i class="fas fa-phone me-2"></i> Call Now
-                    </a>
-                    <a href="https://wa.me/{{ product.shop_owner.phone_number }}" class="btn btn-success w-100">
-                        <i class="fab fa-whatsapp me-2"></i> WhatsApp
-                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 
 <script>
 function getCookie(name) {
@@ -237,8 +245,9 @@ document.querySelectorAll('.add-wishlist').forEach(btn => {
 
             if (res.ok) {
                 showToast(data.message, 'success');
-                icon.classList.toggle('far');
-                icon.classList.toggle('fas');
+                icon.classList.toggle('ri-heart-line');
+                icon.classList.toggle('ri-heart-fill');
+                icon.style.color = icon.classList.contains('ri-heart-fill') ? 'red' : 'white';
             } else {
                 throw new Error(data.error || 'Error updating wishlist');
             }
@@ -249,7 +258,7 @@ document.querySelectorAll('.add-wishlist').forEach(btn => {
 });
 </script>
 
-
+<!-- Toast Notification -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
   <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
     <div class="d-flex">
@@ -260,8 +269,13 @@ document.querySelectorAll('.add-wishlist').forEach(btn => {
 </div>
 
 <style>
-    .product-image {
-        max-height: 500px;
+    .product-image-container {
+        padding: 15px;
+        text-align: center;
+    }
+    .product-image-container img {
+        max-height: 400px;
+        width: 100%;
         object-fit: contain;
     }
     .img-thumbnail {
@@ -269,16 +283,20 @@ document.querySelectorAll('.add-wishlist').forEach(btn => {
         transition: all 0.2s;
     }
     .img-thumbnail:hover {
-        border-color: #0d6efd;
+        border-color: #4a6bff;
         transform: scale(1.05);
     }
     .product-thumbnail.active {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        border-color: #4a6bff;
+        box-shadow: 0 0 0 0.25rem rgba(74, 107, 255, 0.25);
     }
-    .breadcrumb {
-        background-color: transparent;
-        padding: 0;
+    .card {
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+    }
+    .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #f0f0f0;
     }
 </style>
 {% endblock %}

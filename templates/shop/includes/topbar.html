@@ -1,0 +1,268 @@
+{% load static %}
+
+<header class="topbar d-flex">
+    <!-- Sidebar Logo -->
+    <div class="logo-box">
+        <a href="{% url 'landing:index' %}" class="logo-dark">
+            <img src="{% static 'frontend/assets/images/eketex_favicon.png' %}" class="logo-lg" alt="logo dark">
+            <img src="{% static 'frontend/assets/images/eketex_favicon.png' %}" class="logo-lg" alt="logo dark">
+        </a>
+
+        <a href="{% url 'landing:index' %}" class="logo-light">
+            <img src="{% static 'frontend/assets/images/eketex_favicon.png' %}" class="logo-sm" alt="logo sm">
+            <img src="{% static 'frontend/assets/images/eketex_favicon.png' %}" class="logo-lg" alt="logo light">
+        </a>
+    </div>
+
+    <div class="container">
+        <div class="navbar-header">
+
+            <!-- Menu Toggle Button (sm-hover) -->
+            <button type="button" class="btn btn-link d-flex button-sm-hover button-toggle-menu" aria-label="Show Full Sidebar">
+                <i class="ri-menu-2-line button-sm-hover-icon text-white"></i>
+            </button>
+
+            <div class="d-flex align-items-center gap-2">
+                <!-- Enhanced App Search -->
+                <form class="app-search" method="GET" action="{% url 'shops:shop_search' %}">
+                    <div class="position-relative">
+                         <input type="search" 
+                                   class="form-control" 
+                                   name="q" 
+                                   placeholder="Search your products..." 
+                                   value="{{ request.GET.q }}"
+                                   aria-label="Search">
+                         <i class="ri-search-line"></i>
+                    </div>
+               </form>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <!-- Theme Color (Light/Dark) -->
+                <div class="topbar-item">
+                    <button type="button" class="topbar-button" id="light-dark-mode">
+                        <i class="ri-moon-line fs-20 align-middle light-mode"></i>
+                        <i class="ri-sun-line fs-20 align-middle dark-mode"></i>
+                    </button>
+                </div>
+
+                <!-- Notification -->
+                <div class="dropdown topbar-item">
+                    <button type="button" class="topbar-button" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="topbar-badge border border-2 border-info rounded-pill">18<span class="visually-hidden">unread messages</span></span>
+                    </button>
+                    <div class="dropdown-menu pt-0 dropdown-lg dropdown-menu-end" aria-labelledby="page-header-notifications-dropdown">
+                        <div class="p-3 border-top-0 border-start-0 border-end-0 border-dashed border">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div data-simplebar style="max-height: 280px;">
+                            <!-- Item -->
+                            <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom text-wrap">
+                                <p class="mb-0"><span class="fw-medium">Olivia Bennett</span> mentioned you in a comment <span>"This update really improves the user experience! 🚀"</span></p>
+                            </a>
+                            <!-- Item -->
+                            <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom">
+                                <p class="mb-0 fw-semibold">Daniel Roberts</p>
+                                <p class="mb-0 text-wrap">
+                                    Just sent over the revised proposal. Let me know your thoughts.
+                                </p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile -->
+                <div class="dropdown topbar-item">
+                    <a type="button" class="topbar-button p-0" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="d-flex align-items-center gap-2">
+                            <!-- User Image -->
+                            <img class="rounded-circle" width="40" height="40"
+                                src="{% if request.user.profile_picture %}{{ request.user.profile_picture.url }}{% else %}{% static 'frontend/assets/images/users/avatar-1.jpg' %}{% endif %}" 
+                                alt="{{ request.user.get_full_name }}">
+                            
+                            <span class="d-lg-flex flex-column gap-1 d-none">
+                                <!-- User Name -->
+                                <h5 class="my-0 fs-13 text-uppercase text-reset fw-bold">
+                                    {{ request.user.get_full_name|default:"Guest User" }}
+                                </h5>
+                                <!-- User Role Badge -->
+                                <span class="badge {% if request.user.is_shop_owner %}bg-primary{% else %}bg-success{% endif %} rounded-pill fs-10">
+                                    {% if request.user.is_shop_owner %}
+                                        <i class="ri-store-2-line me-1"></i> Shop Owner
+                                    {% else %}
+                                        <i class="ri-user-line me-1"></i> Customer
+                                    {% endif %}
+                                </span>
+                            </span>
+                        </span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <!-- Profile Link -->
+                        <a class="dropdown-item" href="{% if request.user.is_shop_owner %}{% url 'shops:profile' %}{% else %}{% url 'customers:profile' %}{% endif %}">
+                            <i class="ri-user-line fs-18 align-middle me-2"></i>
+                            <span class="align-middle">My Profile</span>
+                        </a>
+                        
+                        <!-- Dashboard Link (for shop owners) -->
+                        {% if request.user.is_shop_owner %}
+                        <a class="dropdown-item" href="{% url 'shops:dashboard' %}">
+                            <i class="ri-dashboard-line fs-18 align-middle me-2"></i>
+                            <span class="align-middle">Dashboard</span>
+                        </a>
+                        {% endif %}
+                        
+                        <!-- Settings Link -->
+                        <a class="dropdown-item" href="{% if request.user.is_shop_owner %}{% url 'shops:settings' %}{% else %}{% url 'customers:settings' %}{% endif %}">
+                            <i class="ri-settings-line fs-18 align-middle me-2"></i>
+                            <span class="align-middle">Settings</span>
+                        </a>
+                        
+                        <div class="dropdown-divider"></div>
+                        
+                        <!-- Logout Link -->
+                        <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                            <i class="ri-logout-box-r-line fs-18 align-middle me-2"></i>
+                            <span class="align-middle">Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Search Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('global-search-input');
+    const suggestionsContainer = document.getElementById('global-search-suggestions');
+    let debounceTimer;
+
+    // Fetch search suggestions
+    async function fetchSuggestions(query) {
+        if (!query || query.length < 2) {
+            suggestionsContainer.innerHTML = '';
+            suggestionsContainer.classList.remove('show');
+            return;
+        }
+
+        try {
+            const response = await fetch(`{% url 'customers:search_suggestions' %}?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            if (data.suggestions && data.suggestions.length > 0) {
+                suggestionsContainer.innerHTML = data.suggestions.map(item => `
+                    <a class="dropdown-item" href="{% url 'customers:product_list' %}?q=${encodeURIComponent(item)}">
+                        <i class="ri-search-line me-2"></i>${item}
+                    </a>
+                `).join('');
+                suggestionsContainer.classList.add('show');
+            } else {
+                suggestionsContainer.innerHTML = '<div class="dropdown-item text-muted">No suggestions found</div>';
+                suggestionsContainer.classList.add('show');
+            }
+        } catch (error) {
+            console.error('Error fetching suggestions:', error);
+            suggestionsContainer.classList.remove('show');
+        }
+    }
+
+    // Event listeners for search
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchSuggestions(e.target.value);
+            }, 300);
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.length >= 2) {
+                fetchSuggestions(searchInput.value);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-input') && !e.target.closest('.search-suggestions')) {
+                suggestionsContainer.classList.remove('show');
+            }
+        });
+    }
+});
+</script>
+
+<style>
+    /* Search Bar Styling */
+    .app-search {
+        position: relative;
+        width: 300px;
+    }
+    
+    .search-input {
+        padding-right: 40px;
+        border-radius: 20px;
+    }
+    
+    .search-widget-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        display: none;
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .search-suggestions.show {
+        display: block;
+    }
+    
+    /* User Profile Styling */
+    .topbar-button {
+        transition: all 0.2s ease;
+    }
+    
+    .topbar-button:hover {
+        opacity: 0.8;
+    }
+    
+    .badge.fs-10 {
+        font-size: 10px !important;
+        padding: 3px 6px;
+    }
+    
+    /* Dropdown Menu Styling */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+    
+    .dropdown-item {
+        padding: 8px 16px;
+        border-radius: 4px;
+        margin: 2px 8px;
+        width: auto;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .dropdown-divider {
+        margin: 4px 0;
+    }
+</style>

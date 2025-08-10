@@ -15,11 +15,10 @@
     </div>
   {% endif %}
 
-
   <!-- User Fields -->
   <div class="mb-3">
     {{ user_form.username.label_tag }}
-    {{ user_form.username }}
+    {{ user_form.username|add_class:"form-control" }}
     {% if user_form.username.errors %}
       <div class="invalid-feedback d-block">{{ user_form.username.errors.0 }}</div>
     {% endif %}
@@ -27,7 +26,7 @@
 
   <div class="mb-3">
     {{ user_form.email.label_tag }}
-    {{ user_form.email }}
+    {{ user_form.email|add_class:"form-control" }}
     {% if user_form.email.errors %}
       <div class="invalid-feedback d-block">{{ user_form.email.errors.0 }}</div>
     {% endif %}
@@ -37,7 +36,7 @@
     <div class="col-md-6 position-relative">
       {{ user_form.password1.label_tag }}
       <div class="input-group">
-        {{ user_form.password1|attr:"type:password" }}
+        {{ user_form.password1|add_class:"form-control"|attr:"type:password" }}
         <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1">
           <i class="bi bi-eye-slash"></i>
         </button>
@@ -50,7 +49,7 @@
     <div class="col-md-6 position-relative">
       {{ user_form.password2.label_tag }}
       <div class="input-group">
-        {{ user_form.password2|attr:"type:password" }}
+        {{ user_form.password2|add_class:"form-control"|attr:"type:password" }}
         <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1">
           <i class="bi bi-eye-slash"></i>
         </button>
@@ -62,23 +61,27 @@
   </div>
 
   <!-- Customer Profile Fields -->
-  <div class="mb-3">
-    <label for="id_phone">Phone Number</label>
-    <input type="text" name="phone" maxlength="10" class="form-control" 
-           pattern="\d{10}" title="Please enter exactly 10 digits" 
-           required id="id_phone">
-    <small class="text-muted">10 digits only (no spaces or special characters)</small>
+<div class="mb-3">
+    <label for="id_phone" class="form-label">Phone Number</label>
+    <div class="input-group">
+        <span class="input-group-text">+233</span>
+        <input type="tel" name="phone" maxlength="9" class="form-control" 
+               pattern="[0-9]{9}" title="Please enter 9 digits after +233" 
+               required id="id_phone" placeholder="241234567">
+    </div>
+    <small class="text-muted">Enter your 9-digit Ghanaian number (e.g., 241234567)</small>
     <div id="phone-error" class="invalid-feedback" style="display: none;"></div>
-  </div>
+</div>
 
   <div class="mb-3">
     {{ profile_form.preferred_location.label_tag }}
-    {{ profile_form.preferred_location }}
+    {{ profile_form.preferred_location|add_class:"form-control" }}
     {% if profile_form.preferred_location.errors %}
       <div class="invalid-feedback d-block">{{ profile_form.preferred_location.errors.0 }}</div>
     {% endif %}
   </div>
 
+  <!-- Rest of your template remains the same -->
   <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
     <i class="bi bi-person-plus me-2"></i> Create Account
   </button>
@@ -104,11 +107,11 @@
   <div class="text-center mt-3">
     <p class="text-muted">Are you a shop owner? <a href="{% url 'accounts:register_shop_owner' %}">Register here</a></p>
   </div>
-
 </form>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Password toggle functionality
     document.querySelectorAll('.toggle-password').forEach(button => {
         button.addEventListener('click', function() {
             const input = this.closest('.input-group').querySelector('input');
@@ -122,7 +125,221 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Phone number validation
+    const phoneInput = document.getElementById('id_phone');
+    const phoneError = document.getElementById('phone-error');
+    
+    phoneInput.addEventListener('input', function() {
+        // Remove any non-digit characters
+        this.value = this.value.replace(/\D/g, '');
+        
+        // Validate length
+        if (this.value.length > 9) {
+            this.value = this.value.slice(0, 9);
+        }
+        
+        // Show/hide error message
+        if (this.value.length !== 9 && this.value.length > 0) {
+            phoneError.textContent = 'Please enter exactly 9 digits';
+            phoneError.style.display = 'block';
+            this.classList.add('is-invalid');
+        } else {
+            phoneError.style.display = 'none';
+            this.classList.remove('is-invalid');
+        }
+    });
 });
 </script>
 
+<style>
+/* ===== BASE STYLES ===== */
+.registration-form {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: #2d3436;
+}
+
+/* ===== TYPOGRAPHY ===== */
+.registration-form h2 {
+    color: #2c3e50;
+    margin-bottom: 1.8rem;
+    font-weight: 600;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.6rem;
+    color: #2c3e50;
+    font-weight: 500;
+    font-size: 1.05rem;
+}
+
+.text-muted {
+    color: #636e72 !important;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 0.4rem;
+}
+
+/* ===== FORM CONTROLS ===== */
+.form-control {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1rem;
+    border: 1px solid #dfe6e9;
+    border-radius: 6px;
+    background-color: #fbfcfc;
+    color: #2d3436;
+    transition: all 0.25s ease;
+}
+
+.form-control:focus {
+    border-color: #0984e3;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.15);
+    background-color: #fff;
+}
+
+/* ===== INPUT GROUP (PHONE FIELD) ===== */
+.input-group {
+    display: flex;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.input-group-text {
+    padding: 0.85rem 1rem;
+    background-color: #f5f6fa;
+    border: 1px solid #dfe6e9;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    color: #2d3436;
+    font-weight: 500;
+}
+
+.input-group input {
+    border-radius: 0 6px 6px 0 !important;
+    flex: 1;
+}
+
+/* ===== VALIDATION STATES ===== */
+.invalid-feedback {
+    color: #d63031;
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+    display: block;
+    font-weight: 500;
+}
+
+.is-invalid {
+    border-color: #d63031 !important;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-primary {
+    background-color: #0984e3;
+    border: 1px solid #0984e3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0767b3;
+    border-color: #0767b3;
+    transform: translateY(-1px);
+}
+
+/* ===== SOCIAL BUTTONS ===== */
+.social-login {
+    margin: 2rem 0 1.5rem;
+}
+
+.divider {
+    color: #b2bec3;
+    font-size: 0.95rem;
+}
+
+.btn-outline {
+    border: 1px solid;
+    background: transparent;
+}
+
+.btn-outline-danger {
+    color: #d63031;
+    border-color: #d63031;
+}
+
+.btn-outline-danger:hover {
+    background-color: #d63031;
+    color: white;
+}
+
+.btn-outline-primary {
+    color: #0984e3;
+    border-color: #0984e3;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0984e3;
+    color: white;
+}
+
+/* ===== LINKS & FOOTER ===== */
+a {
+    color: #0984e3;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.registration-footer {
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+}
+
+/* ===== ERROR MESSAGES ===== */
+#error-container, #register-message {
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+}
+
+.alert-danger {
+    background-color: #ffecec;
+    border: 1px solid #ffc9c9;
+    color: #d63031;
+    padding: 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* ===== PASSWORD TOGGLE ===== */
+.toggle-password {
+    border-left: none !important;
+    background-color: #f5f6fa !important;
+    border-color: #dfe6e9 !important;
+    color: #636e72 !important;
+}
+</style>
 {% endblock %}

@@ -5,6 +5,9 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
+from django.db.models import Q
+from django.http import JsonResponse
+from django.db.models.functions import Lower
 
 from accounts.models import User     # assuming shop owners are in User model
 from django.db.models import Count
@@ -31,8 +34,6 @@ def customers_dashboard(request):
     .order_by('-product_count')[:5]
     )
 
-
-
     context = {
         'total_products': total_products,
         'total_shops': total_shops,
@@ -44,21 +45,58 @@ def customers_dashboard(request):
 
 
 def product_list(request):
+    # Start with base queryset
     qs = Product.objects.filter(is_active=True).select_related('shop_owner')
+    
+    # Add search functionality
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        qs = qs.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query) |
+            Q(shop_owner__shop_name__icontains=search_query)
+        )
+    
+    # Pagination
     paginator = Paginator(qs.order_by('-id'), 12)
     page_obj = paginator.get_page(request.GET.get('page'))
 
     # Get wishlist product IDs if user is authenticated
     wishlist_product_ids = []
     if request.user.is_authenticated:
-        wishlist_product_ids = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        wishlist_product_ids = Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True)
 
     return render(request, 'customers/products.html', {
         'products': page_obj.object_list,
         'page_obj': page_obj,
         'paginator': paginator,
-        'wishlist_product_ids': list(wishlist_product_ids),  # 👈 this is what was missing
+        'wishlist_product_ids': list(wishlist_product_ids),
+        'search_query': search_query,  # Pass search query back to template
     })
+
+
+def search_suggestions(request):
+    query = request.GET.get('q', '')[:50]  # Limit length for safety
+    suggestions = []
+    
+    if query and len(query) >= 2:
+        products = Product.objects.filter(
+            Q(name__icontains=query) | 
+            Q(shop_owner__shop_name__icontains=query),
+            is_active=True
+        ).order_by(Lower('name'))[:5]  # Get top 5 matches
+        
+        shop_names = Product.objects.filter(
+            shop_owner__shop_name__icontains=query,
+            is_active=True
+        ).values_list('shop_owner__shop_name', flat=True).distinct()[:2]
+        
+        suggestions = list(products.values_list('name', flat=True))
+        suggestions.extend(f"Shop: {name}" for name in shop_names)
+    
+    return JsonResponse({'suggestions': suggestions})
 
 
 @login_required
@@ -73,27 +111,6 @@ def submit_review(request, pk):
                 defaults=form.cleaned_data
             )
     return redirect('customers:product_detail', pk=pk)
-
-def product_detail(request, pk):
-    product = get_object_or_404(Product, pk=pk, is_active=True)
-    review_form = ReviewForm()
-    
-    wishlist_product_ids = []
-    if request.user.is_authenticated:
-        wishlist_product_ids = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
-
-    related_products = Product.objects.filter(
-        shop_owner=product.shop_owner
-    ).exclude(pk=product.pk).order_by('?')[:4]
-
-    return render(request, 'customers/product_detail.html', {
-        'product': product,
-        'wishlist_product_ids': list(wishlist_product_ids),
-        'related_products': related_products,
-        'review_form': review_form
-    })
-
-
 
 @login_required
 def product_detail(request, pk):

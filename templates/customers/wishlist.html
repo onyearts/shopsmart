@@ -1,36 +1,146 @@
 {% extends 'customers/base.html' %}
 {% block content %}
-<div class="page-header flex-wrap">
-  <h3 class="mb-0">My Wishlist</h3>
-</div>
-<div class="row">
-  {% if wishlist_items %}
-    {% for item in wishlist_items %}
-    <div class="col-md-4 grid-margin stretch-card">
-      <div class="card">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-sm me-3">
-            <div>
-              <h6 class="mb-1">{{ item.product.name }}</h6>
-              <p class="mb-0 text-muted">${{ item.product.price }}</p>
+<div class="page-container">
+    <div class="page-content">
+        <!-- Page Header -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h4 class="mb-0">My Wishlist</h4>
+                    <div class="dropdown">
+                        <a href="#" class="btn btn-sm btn-outline-light rounded" data-bs-toggle="dropdown">
+                            <i class="ri-more-2-line"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="#" class="dropdown-item">Share Wishlist</a>
+                            <a href="#" class="dropdown-item">Export</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="ms-auto dropdown">
-              <a href="#" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="">Add to Cart</a>
-                <a class="dropdown-item text-danger" href="{% url 'customers:remove_wishlist' %}">Remove</a>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
+
+        <!-- Wishlist Items -->
+        <div class="row">
+            {% if wishlist_items %}
+                {% for item in wishlist_items %}
+                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                    <div class="card product-card">
+                        <div class="position-relative">
+                            <img src="{{ item.product.image.url }}" class="card-img-top" alt="{{ item.product.name }}" style="height: 180px; object-fit: cover;">
+                            <button class="btn btn-sm position-absolute top-0 end-0 m-2 p-0 bg-transparent border-0 remove-wishlist" data-product-id="{{ item.product.id }}">
+                                <i class="ri-heart-fill fs-18" style="color: red;"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">{{ item.product.name|truncatechars:25 }}</h5>
+                            <p class="text-primary fw-bold mb-2">GH₵ {{ item.product.price|floatformat:2 }}</p>
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'customers:product_detail' item.product.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                <a href="#" class="btn btn-sm btn-primary">Add to Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="ri-heart-line fs-48 text-muted mb-3"></i>
+                            <h4>Your wishlist is empty</h4>
+                            <p class="text-muted mb-4">Save your favorite items here</p>
+                            <a href="{% url 'customers:product_list' %}" class="btn btn-primary">Browse Products</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
-    {% endfor %}
-  {% else %}
-    <div class="col-12">
-      <div class="alert alert-info">Your wishlist is empty.</div>
-    </div>
-  {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove from wishlist functionality
+    document.querySelectorAll('.remove-wishlist').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            
+            try {
+                const response = await fetch("{% url 'customers:remove_wishlist' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ product_id: productId }),
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Show success toast
+                    const toast = new bootstrap.Toast(document.getElementById('toastMessage'));
+                    document.getElementById('toastBody').textContent = data.message;
+                    document.getElementById('toastMessage').classList.remove('bg-danger');
+                    document.getElementById('toastMessage').classList.add('bg-success');
+                    toast.show();
+                    
+                    // Remove item from DOM
+                    this.closest('.col-xl-3').remove();
+                    
+                    // If no items left, show empty state
+                    if (document.querySelectorAll('.remove-wishlist').length === 0) {
+                        location.reload(); // Or implement dynamic empty state
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to remove item');
+                }
+            } catch (error) {
+                // Show error toast
+                const toast = new bootstrap.Toast(document.getElementById('toastMessage'));
+                document.getElementById('toastBody').textContent = error.message;
+                document.getElementById('toastMessage').classList.remove('bg-success');
+                document.getElementById('toastMessage').classList.add('bg-danger');
+                toast.show();
+            }
+        });
+    });
+});
+</script>
+
+<!-- Toast Notification -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastBody"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-card {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+    }
+    .product-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
+    }
+    .card-img-top {
+        height: 180px;
+        object-fit: cover;
+    }
+    .card-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
 {% endblock %}

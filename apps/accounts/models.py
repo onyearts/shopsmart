@@ -17,9 +17,23 @@ def send_verification_email(email, code):
 
 # Add this validator at the top of your models.py
 phone_validator = RegexValidator(
-    regex=r'^\d{10}$',
-    message="Phone number must be exactly 10 digits (no spaces or special characters)"
+    regex=r'^(0\d{9}|\+233\d{9})$',  # Updated regex
+    message="Phone number must be 10 digits starting with 0 (e.g., 0241234567) or 12 digits with +233 (e.g., +233241234567)"
 )
+
+
+def format_ghana_phone_number(phone):
+    """Convert a 10-digit Ghanaian phone number to +233 format"""
+    if not phone:
+        return None
+    phone = str(phone).strip()
+    if phone.startswith('0') and len(phone) == 10:
+        return f"+233{phone[1:]}"
+    elif phone.startswith('233') and len(phone) == 12:
+        return f"+{phone}"
+    elif phone.startswith('+233') and len(phone) == 13:
+        return phone
+    return None
 
 class PendingUser(models.Model):
     email = models.EmailField(unique=True)
@@ -133,6 +147,20 @@ class ShopOwnerProfile(models.Model):
         verbose_name = 'Shop Owner Profile'
         verbose_name_plural = 'Shop Owner Profiles'
 
+    def save(self, *args, **kwargs):
+        self.phone = format_ghana_phone_number(self.phone)
+        super().save(*args, **kwargs)
+
+    def get_phone_display(self):
+        if not self.phone:
+            return "Not provided"
+        return f"{self.phone[:4]} {self.phone[4:6]} {self.phone[6:9]} {self.phone[9:]}"
+
+    def get_whatsapp_link(self):
+        if not self.phone:
+            return None
+        return f"https://wa.me/{self.phone.replace('+', '')}"
+
 
 class CustomerProfile(models.Model):
     user = models.OneToOneField(
@@ -155,3 +183,17 @@ class CustomerProfile(models.Model):
     class Meta:
         verbose_name = 'Customer Profile'
         verbose_name_plural = 'Customer Profiles'
+    
+    def save(self, *args, **kwargs):
+        self.phone = format_ghana_phone_number(self.phone)
+        super().save(*args, **kwargs)
+
+    def get_phone_display(self):
+        if not self.phone:
+            return "Not provided"
+        return f"{self.phone[:4]} {self.phone[4:6]} {self.phone[6:9]} {self.phone[9:]}"
+
+    def get_whatsapp_link(self):
+        if not self.phone:
+            return None
+        return f"https://wa.me/{self.phone.replace('+', '')}"
