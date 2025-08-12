@@ -29,11 +29,12 @@
                          <input type="search" 
                                    class="form-control" 
                                    name="q" 
-                                   placeholder="Search your products..." 
+                                   placeholder="Search here" 
                                    value="{{ request.GET.q }}"
                                    aria-label="Search">
-                         <i class="ri-search-line"></i>
+                         
                     </div>
+                    
                </form>
             </div>
 
@@ -195,26 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-    /* Search Bar Styling */
-    .app-search {
-        position: relative;
-        width: 300px;
-    }
-    
-    .search-input {
-        padding-right: 40px;
-        border-radius: 20px;
-    }
-    
-    .search-widget-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-    }
-    
+<style>    
     .search-suggestions {
         position: absolute;
         top: 100%;

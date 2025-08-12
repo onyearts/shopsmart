@@ -22,6 +22,21 @@
                     </div>
                 </div>
 
+                <!-- Profile Incomplete Alert -->
+                {% if not request.user.shopownerprofile.is_profile_complete %}
+                <div class="alert alert-warning">
+                    <h4 class="alert-heading">
+                        <i class="ri-alert-line me-2"></i> Profile Incomplete
+                    </h4>
+                    <p>Please complete your shop profile before adding products. This helps customers know more about your business.</p>
+                    <hr>
+                    <a href="{% url 'shops:edit_profile' %}" class="btn btn-warning">
+                        <i class="ri-user-settings-line me-1"></i> Complete Profile Now
+                    </a>
+                </div>
+                {% endif %}
+
+
                 <!-- Product Form Card -->
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
@@ -196,7 +211,12 @@ document.getElementById('product-form').addEventListener('submit', async functio
         }
     } catch (error) {
         console.error(error);
-        showToast("Error saving product: " + (error.response?.data?.error || "Please check your inputs"), "danger");
+        if (error.response?.data?.incomplete_profile) {
+            // Redirect to profile page if profile is incomplete
+            window.location.href = "{% url 'shops:edit_profile' %}";
+        } else {
+            showToast("Error saving product: " + (error.response?.data?.error || "Please check your inputs"), "danger");
+        }
     } finally {
         // Hide loader
         submitBtn.disabled = false;

@@ -51,6 +51,12 @@
             </div>
 
             <h2 class="mb-4 fw-bold text-center">Register as a Shop Owner</h2>
+            <!-- Error container -->
+            {% if error %}
+                <div id="error-container" class="alert alert-danger mb-4">
+                    {{ error }}
+                </div>
+            {% endif %}
 
             {% if form.non_field_errors %}
             <div class="alert alert-danger">
@@ -103,10 +109,12 @@
                     <input type="tel" name="{{ field.name }}" class="form-control" 
                            maxlength="9" pattern="[0-9]{9}" 
                            title="Enter 9 digits after +233" required
-                           value="{{ field.value|default:''|slice:'1:' }}"
-                           placeholder="241234567">
+                           value="{{ field.value|default:''|slice:'4:' }}"
+                           placeholder="241234567"
+                           id="id_phone">
                 </div>
-                <small class="form-text text-muted">Enter 9 digits after +233 (e.g., 241234567)</small>
+                <small class="form-text text-muted">Enter your 9-digit Ghanaian number without the leading 0 (e.g., 241234567)</small>
+                <div id="phone-error" class="invalid-feedback" style="display: none;"></div>
                 {% else %}
                 {{ field }}
                 {% endif %}
@@ -311,96 +319,92 @@ h2 {
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Password strength meter
-    const passwordInput = document.getElementById('id_password1');
-    if (passwordInput) {
-      passwordInput.addEventListener('input', function () {
-        const result = zxcvbn(this.value);
-        const score = result.score;
-        const strength = (score + 1) * 25;
-        const progressBar = document.querySelector('.progress-bar');
-        const strengthText = document.querySelector('.strength-text');
-
-        if (progressBar && strengthText) {
-          progressBar.style.width = strength + '%';
-          const strengthMap = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
-          const colorMap = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#28a745'];
-
-          strengthText.textContent = strengthMap[score];
-          strengthText.style.color = colorMap[score];
-          progressBar.style.backgroundColor = colorMap[score];
-        }
-      });
-    }
-
-    // Toggle password visibility
+document.addEventListener('DOMContentLoaded', function() {
+    // Password toggle functionality
     document.querySelectorAll('.toggle-password').forEach(button => {
-      button.addEventListener('click', function () {
-        const input = this.closest('.input-group').querySelector('input');
-        const icon = this.querySelector('i');
-        if (input.type === 'password') {
-          input.type = 'text';
-          icon.classList.replace('bi-eye-slash', 'bi-eye');
-        } else {
-          input.type = 'password';
-          icon.classList.replace('bi-eye', 'bi-eye-slash');
-        }
-      });
+        button.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('input');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            }
+        });
     });
 
     // Phone number validation
-    const phoneInput = document.querySelector('input[name="phone"]');
+    const phoneInput = document.getElementById('id_phone');
+    const phoneError = document.getElementById('phone-error');
+    
     if (phoneInput) {
-      phoneInput.addEventListener('input', function () {
-        this.value = this.value.replace(/\D/g, '');
-        if (this.value.length > 9) {
-          this.value = this.value.slice(0, 9);
-        }
-      });
+        phoneInput.addEventListener('input', function() {
+            // Remove any non-digit characters
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Remove leading 0 if entered
+            if (this.value.startsWith('0')) {
+                this.value = this.value.substring(1);
+            }
+            
+            // Validate length
+            if (this.value.length > 9) {
+                this.value = this.value.slice(0, 9);
+            }
+            
+            // Show/hide error message
+            if (this.value.length !== 9 && this.value.length > 0) {
+                phoneError.textContent = 'Please enter exactly 9 digits (without the leading 0)';
+                phoneError.style.display = 'block';
+                this.classList.add('is-invalid');
+            } else {
+                phoneError.style.display = 'none';
+                this.classList.remove('is-invalid');
+            }
+        });
     }
-  });
 
-  // AJAX Form Submission
-  $(document).ready(function () {
-    $('#registration-form').on('submit', function (e) {
-      e.preventDefault();
+    // AJAX Form Submission
+    $('#registration-form').on('submit', function(e) {
+        e.preventDefault();
 
-      $.ajax({
-        type: 'POST',
-        url: $(this).attr('action') || window.location.href,
-        data: $(this).serialize(),
-        success: function (response) {
-          if (response.redirect_url) {
-            // Show success page
-            $('#registration-form-page').hide();
-            $('#success-page').show();
-            window.scrollTo(0, 0);
+        $.ajax({
+            type: 'POST',
+            url: $(this).attr('action') || window.location.href,
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.redirect_url) {
+                    // Show success page
+                    $('#registration-form-page').hide();
+                    $('#success-page').show();
+                    window.scrollTo(0, 0);
 
-            // Optional delay before redirect
-            setTimeout(() => {
-              window.location.href = response.redirect_url;
-            }, 5000); // Redirect after 5 seconds
-          }
-        },
-        error: function (xhr) {
-          let errorMsg = 'Something went wrong. Please try again.';
-          const errorContainer = $('#error-container');
-          const errorMessage = $('#error-message');
+                    // Optional delay before redirect
+                    setTimeout(() => {
+                        window.location.href = response.redirect_url;
+                    }, 5000);
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Something went wrong. Please try again.';
+                const errorContainer = $('#error-container');
+                const errorMessage = $('#error-message');
 
-          if (xhr.responseJSON && xhr.responseJSON.error) {
-            errorMsg = xhr.responseJSON.error;
-          }
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
 
-          errorMessage.text(errorMsg);
-          errorContainer.slideDown();
+                errorMessage.text(errorMsg);
+                errorContainer.slideDown();
 
-          $('html, body').animate({
-            scrollTop: errorContainer.offset().top - 20
-          }, 500);
-        }
-      });
+                $('html, body').animate({
+                    scrollTop: errorContainer.offset().top - 20
+                }, 500);
+            }
+        });
     });
-  });
+});
 </script>
 {% endblock %}

@@ -1,13 +1,18 @@
 import json
+from time import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.db.models import Q
 from django.http import JsonResponse
 from django.db.models.functions import Lower
+
+from accounts.models import User, CustomerProfile  # Import CustomerProfile
+from accounts.forms import EditUserForm, EditCustomerForm  # Import the forms
 
 from accounts.models import User     # assuming shop owners are in User model
 from django.db.models import Count
@@ -15,6 +20,98 @@ from shops.models import Product
 from .models import Wishlist
 from .models import Wishlist, Review
 from .forms import ReviewForm
+
+@login_required
+def profile(request):
+    if not request.user.is_customer:
+        return redirect('accounts:login')
+    
+    try:
+        profile = request.user.customerprofile
+    except CustomerProfile.DoesNotExist:
+        messages.warning(request, "Please complete your profile information")
+        return redirect('customers:edit_profile')
+    
+    age = profile.get_age() if profile.date_of_birth else None
+    
+    return render(request, 'customers/profile.html', {
+        'profile': profile,
+        'age': age,
+        'profile_complete': profile.is_profile_complete()
+    })
+
+@login_required
+def edit_profile(request):
+    if not request.user.is_customer:
+        return redirect('accounts:login')
+    
+    user = request.user
+    try:
+        profile = user.customerprofile
+        profile_exists = True
+    except CustomerProfile.DoesNotExist:
+        profile = None
+        profile_exists = False
+
+    if request.method == 'POST':
+        user_form = EditUserForm(request.POST, request.FILES, instance=user)
+        profile_form = EditCustomerForm(request.POST, instance=profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+            
+            if not profile_exists:
+                # Create new profile
+                profile = profile_form.save(commit=False)
+                profile.user = user
+                profile.save()
+                messages.success(request, "Profile created successfully!")
+            else:
+                # Update existing profile
+                profile_form.save()
+                messages.success(request, "Profile updated successfully!")
+            
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Profile saved successfully',
+                    'redirect_url': reverse('customers:profile')
+                })
+            return redirect('customers:profile')
+
+        # Handle form errors
+        errors = {}
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            errors.update(user_form.errors.get_json_data())
+            errors.update(profile_form.errors.get_json_data())
+            return JsonResponse({'errors': errors}, status=400)
+    else:
+        user_form = EditUserForm(instance=user)
+        profile_form = EditCustomerForm(instance=profile)
+
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form,
+        'profile_incomplete': not profile_exists
+    }
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'forms': {
+                'user_form': user_form.as_p(),
+                'profile_form': profile_form.as_p()
+            }
+        })
+    return render(request, 'customers/edit_profile.html', context)
+
+
+
+@login_required
+def dashboard(request):
+    if not request.user.is_customer:
+        return redirect('accounts:login')
+    
+    return render(request, 'customers/dashboard.html')
 
 @login_required
 def customers_dashboard(request):

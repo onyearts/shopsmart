@@ -101,13 +101,35 @@ def dashboard(request):
     return render(request, 'shop/dashboard.html', context)
 
 
+
+
 @login_required
-def product_add_edit(request):
+def product_add_edit(request, pk=None):
     if not request.user.is_shop_owner:
         return JsonResponse({'error': 'Unauthorized'}, status=403)
 
     shop_owner = request.user.shopownerprofile
+    
+    # Check if profile is complete
+    if not shop_owner.is_profile_complete():
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'Please complete your profile before adding products', 'incomplete_profile': True}, status=400)
+        messages.warning(request, 'Please complete your profile before adding products')
+        return redirect('shops:edit_profile')
 
+    # Existing product editing logic if pk is provided
+    if pk:
+        product = get_object_or_404(Product, pk=pk, shop_owner=shop_owner)
+        if request.method == 'POST':
+            form = ProductForm(request.POST, request.FILES, instance=product)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({'message': 'Product updated successfully'})
+            return JsonResponse({'error': form.errors}, status=400)
+        form = ProductForm(instance=product)
+        return render(request, 'shop/product-add-edit.html', {'form': form, 'product': product})
+
+    # New product creation logic
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
@@ -115,11 +137,13 @@ def product_add_edit(request):
             product.shop_owner = shop_owner
             product.save()
             return JsonResponse({'message': 'Product created successfully'})
-        else:
-            return JsonResponse({'error': form.errors}, status=400)
+        return JsonResponse({'error': form.errors}, status=400)
 
     form = ProductForm()
     return render(request, 'shop/product-add-edit.html', {'form': form})
+
+
+
 
 @login_required
 def product_list(request):

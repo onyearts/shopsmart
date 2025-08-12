@@ -32,7 +32,6 @@
                                         placeholder="Search products..." 
                                         value="{{ request.GET.q }}"
                                         aria-label="Search">
-                              <i class="ri-search-line"></i>
                          </div>
                     </form>
               </div>
@@ -106,9 +105,16 @@
                                    <span class="d-lg-flex flex-column gap-1 d-none">
                                         <!-- ✅ Show user's full name -->
                                         <h5 class="my-0 fs-13 text-uppercase text-reset fw-bold">
-                                             {{ request.user.full_name|default:"Guest User" }}
+                                             {{ request.user.get_full_name|default:"Guest User" }}
                                         </h5>
-                                   </span>
+                                        <!-- ✅ Show role badge -->
+                                        <span class="badge {% if request.user.is_shop_owner %}bg-primary{% else %}bg-success{% endif %} rounded-pill fs-10">
+                                             {% if request.user.is_shop_owner %}
+                                                  <i class="ri-store-2-line me-1"></i> Shop Owner
+                                             {% else %}
+                                                  <i class="ri-user-line me-1"></i> Customer
+                                             {% endif %}
+                                        </span>
                               </span>
                          </a>
                          <div class="dropdown-menu dropdown-menu-end">

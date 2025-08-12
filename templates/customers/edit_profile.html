@@ -1,0 +1,273 @@
+{% extends 'customers/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Edit Profile</h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="profileForm">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">Basic Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ user_form.first_name.id_for_label }}" 
+                                       class="form-label">First Name</label>
+                                {{ user_form.first_name }}
+                                <div class="invalid-feedback">
+                                    {{ user_form.first_name.errors|first }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ user_form.last_name.id_for_label }}" 
+                                       class="form-label">Last Name</label>
+                                {{ user_form.last_name }}
+                                <div class="invalid-feedback">
+                                    {{ user_form.last_name.errors|first }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ user_form.email.id_for_label }}" 
+                                   class="form-label">Email</label>
+                            {{ user_form.email }}
+                            <div class="invalid-feedback">
+                                {{ user_form.email.errors|first }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ user_form.profile_picture.id_for_label }}" 
+                                   class="form-label">Profile Picture</label>
+                            {{ user_form.profile_picture }}
+                            <div class="invalid-feedback">
+                                {{ user_form.profile_picture.errors|first }}
+                            </div>
+                            {% if user.profile_picture %}
+                            <div class="mt-2">
+                                <small>Current:</small>
+                                <img src="{{ user.profile_picture.url }}" 
+                                     width="100" 
+                                     class="d-block mt-1" 
+                                     alt="Current profile picture">
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h5 class="mb-3">Contact Information</h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ profile_form.phone.id_for_label }}" 
+                                   class="form-label">Phone Number</label>
+                            {{ profile_form.phone }}
+                            <div class="form-text">
+                                Format: +233XXXXXXXXX
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ profile_form.phone.errors|first }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ profile_form.preferred_location.id_for_label }}" 
+                                   class="form-label">Preferred Location</label>
+                            {{ profile_form.preferred_location }}
+                            <div class="invalid-feedback">
+                                {{ profile_form.preferred_location.errors|first }}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h5 class="mb-3">Additional Information</h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ profile_form.date_of_birth.id_for_label }}" 
+                                       class="form-label">Date of Birth</label>
+                                {{ profile_form.date_of_birth }}
+                                <div class="invalid-feedback">
+                                    {{ profile_form.date_of_birth.errors|first }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ profile_form.gender.id_for_label }}" 
+                                       class="form-label">Gender</label>
+                                {{ profile_form.gender }}
+                                <div class="invalid-feedback">
+                                    {{ profile_form.gender.errors|first }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'customers:profile' %}" 
+                               class="btn btn-outline-secondary me-md-2">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.getElementById('profile-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ri-loader-4-line me-1"></i> Saving...';
+    
+    try {
+        const response = await fetch("{% url 'customers:edit_profile' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showToast('Profile updated successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = "{% url 'customers:profile' %}";
+            }, 1500);
+        } else {
+            // Handle form errors
+            if (data.errors) {
+                let errorMessages = [];
+                for (const field in data.errors) {
+                    errorMessages.push(...data.errors[field]);
+                }
+                showToast(errorMessages.join('<br>'), 'danger');
+            } else {
+                showToast('Error updating profile. Please check your inputs.', 'danger');
+            }
+        }
+    } catch (error) {
+        showToast('Network error. Please try again.', 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ri-save-line me-1"></i> Save Changes';
+    }
+});
+
+// Toast notification function
+function showToast(message, type = 'success') {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    
+    toast.className = `toast show align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+    
+    // Add click handler for close button
+    toast.querySelector('.btn-close').addEventListener('click', () => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    });
+}
+
+$(document).ready(function() {
+    // Handle AJAX form submission
+    $('#profileForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var formData = new FormData(form[0]);
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
+            },
+            error: function(xhr) {
+                var errors = xhr.responseJSON.errors;
+                if (errors) {
+                    // Clear previous errors
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('.invalid-feedback').text('');
+                    
+                    // Display new errors
+                    $.each(errors, function(field, messages) {
+                        var input = $('[name="' + field + '"]');
+                        input.addClass('is-invalid');
+                        input.next('.invalid-feedback').text(messages[0].message);
+                    });
+                }
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.toast {
+    transition: opacity 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+.toast:not(.show) {
+    opacity: 0;
+}
+
+.bg-success {
+    background-color: var(--bs-success) !important;
+}
+
+.bg-danger {
+    background-color: var(--bs-danger) !important;
+}
+
+.bg-warning {
+    background-color: var(--bs-warning) !important;
+}
+</style>
+{% endblock %}
