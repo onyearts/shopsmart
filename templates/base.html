@@ -72,34 +72,69 @@
                 <li class="nav-item">
                   <a class="nav-link scroll-link" href="#contact">Contact</a>
                 </li>
+                {% if user.is_authenticated %}
                 <li class="nav-item" id="login-item">
+                  <a class="nav-link scroll-link" href="{% url 'accounts:logout' %}">Logout</a>
+                </li>
+                {% else %}
+                <li class="nav-item" id="logout-item">
                   <a class="nav-link scroll-link" href="{% url 'accounts:login' %}">Login</a>
                 </li>
+                {% endif %}
+
               </ul>
             </div>
           </div>
 
           <!-- Auth Buttons -->
           <div class="ms-auto w-auto">
-            <div class="header-social d-flex align-items-center gap-2">
-              <a class="btn btn-secondary py-2" href="{% url 'accounts:login' %}">Login</a>
-              <a class="btn btn-primary py-2" href="{% url 'accounts:register_customer' %}">Signup</a>
+          <div class="header-social d-flex align-items-center gap-2">
+              {% if user.is_authenticated %}
+                  <!-- Show when user is logged in -->
+                  <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle py-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                          {% if user.profile_picture %}
+                              <img src="{{ user.profile_picture.url }}" class="rounded-circle me-1" width="24" height="24" alt="Profile">
+                          {% endif %}
+                          {{ user.get_short_name|default:user.email }}
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                          <li>
+                              <a class="dropdown-item" href="
+                                  {% if user.is_shop_owner %}
+                                      {% url 'shops:profile' %}
+                                  {% elif user.is_customer %}
+                                      {% url 'customers:profile' %}
+                                  {% else %}
+                                      #
+                                  {% endif %}
+                              ">Profile</a>
+                          </li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+                      </ul>
+                  </div>
+              {% else %}
+                  <!-- Show when user is logged out -->
+                  <a class="btn btn-secondary py-2" href="{% url 'accounts:login' %}">Login</a>
+                  <a class="btn btn-primary py-2" href="{% url 'accounts:register_customer' %}">Signup</a>
+              {% endif %}
+              
               <button class="fbs__net-navbar-toggler justify-content-center align-items-center ms-auto"
                       data-bs-toggle="offcanvas" data-bs-target="#fbs__net-navbars"
                       aria-controls="fbs__net-navbars" aria-label="Toggle navigation">
-                <svg class="fbs__net-icon-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="21" x2="3" y1="6" y2="6"></line>
-                  <line x1="15" x2="3" y1="12" y2="12"></line>
-                  <line x1="17" x2="3" y1="18" y2="18"></line>
-                </svg>
-                <svg class="fbs__net-icon-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 6 6 18"></path>
-                  <path d="m6 6 12 12"></path>
-                </svg>
+                  <svg class="fbs__net-icon-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="21" x2="3" y1="6" y2="6"></line>
+                      <line x1="15" x2="3" y1="12" y2="12"></line>
+                      <line x1="17" x2="3" y1="18" y2="18"></line>
+                  </svg>
+                  <svg class="fbs__net-icon-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 6 6 18"></path>
+                      <path d="m6 6 12 12"></path>
+                  </svg>
               </button>
-            </div>
           </div>
-        </div>
+      </div>
       </header>
 
       <!-- Main Content -->

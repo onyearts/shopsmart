@@ -52,7 +52,9 @@
                             </button>
                             {% endif %}
                             
-                            <a href="#" class="btn btn-outline-secondary">
+                            <a href="#" class="btn btn-outline-secondary" id="getDirectionsBtn" 
+                                data-shop-lat="{{ product.shop_owner.latitude }}" 
+                                data-shop-lng="{{ product.shop_owner.longitude }}">
                                 <i class="ri-map-pin-line me-2"></i> Get Directions
                             </a>
                         </div>
@@ -66,6 +68,33 @@
                     </div>
                     <div class="card-body">
                         <p class="mb-0">{{ product.description|linebreaks }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Directions Modal -->
+        <div class="modal fade" id="directionsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="ri-map-pin-line me-2"></i> Directions to {{ product.shop_owner.shop_name }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0 d-flex flex-column" style="min-height: 70vh;">
+                        <!-- Map Container (Full-width top section) -->
+                        <div id="directions-map" style="flex: 1; min-height: 300px;"></div>
+                        
+                        <!-- Directions Panel (Bottom section) -->
+                        <div class="border-top p-3" style="max-height: 40vh; overflow-y: auto;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" id="directions-summary"></h6>
+                                <div class="btn-group btn-group-sm" id="route-options-tabs"></div>
+                            </div>
+                            <div id="directions-instructions"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,8 +120,13 @@
                             <div class="mb-3 pb-3 border-bottom">
                                 <div class="d-flex justify-content-between mb-2">
                                     <div class="d-flex align-items-center">
-                                        {% with review.user.customerprofile.profile_picture.url as profile_url %}
-                                            <img src="{{ profile_url }}" alt="Profile" class="rounded-circle me-2" width="40" height="40" onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
+                                        {% with review.user.profile_picture.url as profile_url %}
+                                             <img src="{{ profile_url }}" 
+                                                alt="Profile" 
+                                                class="rounded-circle me-2" 
+                                                width="40" 
+                                                height="40"
+                                                onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}'">
                                         {% endwith %}
                                         <div>
                                             <span class="fw-semibold">{{ review.user.get_full_name }}</span>
@@ -198,6 +232,144 @@
     </div>
 </div>
 
+<!-- Toast Notification -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+  <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastBody">Success message</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<style>
+    /* Existing styles remain unchanged */
+    .product-image-container {
+        padding: 15px;
+        text-align: center;
+    }
+    .product-image-container img {
+        max-height: 400px;
+        width: 100%;
+        object-fit: contain;
+    }
+    .card {
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+    }
+    .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* Enhanced Directions styling */
+    #directions-map {
+        width: 100%;
+        border-bottom: 1px solid #dee2e6;
+        flex: 1;
+        min-height: 300px;
+    }
+    
+    #directions-instructions {
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+    
+    .route-step {
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-left: 3px solid #4a6bff;
+    }
+    
+    .route-step:hover {
+        background: #e9ecef;
+    }
+    
+    .route-step .distance {
+        font-size: 0.8em;
+        color: #6c757d;
+        min-width: 60px;
+    }
+    
+    /* Hide Leaflet's default instructions panel */
+    .leaflet-routing-container {
+        display: none !important;
+    }
+    
+    .custom-icon {
+        background: none !important;
+        border: none !important;
+    }
+    
+    /* Enhanced path visualization */
+    .leaflet-routing-alternatives-container {
+        display: none;
+    }
+    
+    .route-distance-marker {
+        background: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        border: 2px solid #4a6bff;
+    }
+    
+    .route-distance-marker small {
+        font-weight: bold;
+        color: #4a6bff;
+    }
+    
+    /* Animation for the primary route */
+    @keyframes dash {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+    
+    .animated-route {
+        animation: dash 5s linear forwards;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        #directions-map {
+            height: 300px !important;
+        }
+        
+        #directionsModal .modal-dialog {
+            margin: 0;
+            max-width: 100%;
+            height: 100vh;
+        }
+        
+        #directionsModal .modal-content {
+            height: 100vh;
+            border-radius: 0;
+        }
+        
+        #directions-map {
+            min-height: 50vh;
+        }
+        
+        .route-instructions-container {
+            max-height: 250px;
+        }
+    }
+</style>
+
+<!-- Leaflet JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+
 <script>
 function getCookie(name) {
     let cookieValue = null;
@@ -256,47 +428,323 @@ document.querySelectorAll('.add-wishlist').forEach(btn => {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const getDirectionsBtn = document.getElementById('getDirectionsBtn');
+    if (!getDirectionsBtn) {
+        console.error('Get Directions button not found in DOM');
+        return;
+    }
+
+    const directionsModal = new bootstrap.Modal(document.getElementById('directionsModal'));
+    
+    const userIcon = L.divIcon({
+        html: `
+            <div style="position: relative;">
+                <i class="ri-user-location-fill" style="color:#3498db; font-size:32px;"></i>
+                <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); 
+                    background: white; padding: 2px 6px; border-radius: 12px; font-size: 10px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.2); white-space: nowrap;">
+                    You are here
+                </div>
+            </div>
+        `,
+        className: 'custom-icon',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32]
+    });
+    
+    const shopIcon = L.divIcon({
+        html: `
+            <div style="position: relative;">
+                <i class="ri-store-2-fill" style="color:#e74c3c; font-size:32px;"></i>
+                <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); 
+                    background: white; padding: 2px 6px; border-radius: 12px; font-size: 10px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.2); white-space: nowrap;">
+                    {{ product.shop_owner.shop_name|escapejs }}
+                </div>
+            </div>
+        `,
+        className: 'custom-icon',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32]
+    });
+
+    getDirectionsBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Get Directions button clicked');
+
+        const shopLat = parseFloat(this.dataset.shopLat);
+        const shopLng = parseFloat(this.dataset.shopLng);
+        const shopName = "{{ product.shop_owner.shop_name|escapejs }}";
+        
+        if (isNaN(shopLat) || isNaN(shopLng)) {
+            console.error('Invalid shop coordinates:', this.dataset.shopLat, this.dataset.shopLng);
+            showToast('This shop hasn\'t set up their location yet', 'warning');
+            return;
+        }
+        
+        const originalContent = this.innerHTML;
+        this.innerHTML = '<i class="ri-loader-4-line animate-spin me-2"></i> Getting location...';
+        this.disabled = true;
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    console.log('User location obtained:', position.coords);
+                    getDirectionsBtn.innerHTML = originalContent;
+                    getDirectionsBtn.disabled = false;
+                    
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    
+                    initDirectionsMap(userLat, userLng, shopLat, shopLng, shopName);
+                    directionsModal.show();
+                },
+                function(error) {
+                    getDirectionsBtn.innerHTML = originalContent;
+                    getDirectionsBtn.disabled = false;
+                    
+                    console.error('Geolocation error:', error);
+                    let message = "Couldn't get your location: ";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message += "Please enable location permissions in your browser settings";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message += "Location information is unavailable";
+                            break;
+                        case error.TIMEOUT:
+                            message += "The request to get your location timed out";
+                            break;
+                        default:
+                            message += "An unknown error occurred";
+                    }
+                    
+                    showToast(message, 'warning');
+                    showLocationErrorModal(message, shopLat, shopLng, shopName);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            getDirectionsBtn.innerHTML = originalContent;
+            getDirectionsBtn.disabled = false;
+            console.error('Geolocation not supported');
+            showToast("Geolocation is not supported by your browser", 'warning');
+            showLocationErrorModal("Your browser doesn't support geolocation", shopLat, shopLng, shopName);
+        }
+    });
+
+    function initDirectionsMap(userLat, userLng, shopLat, shopLng, shopName) {
+        if (window.directionsMap) {
+            window.directionsMap.remove();
+        }
+        
+        const map = L.map('directions-map').fitBounds([
+            [userLat, userLng],
+            [shopLat, shopLng]
+        ]);
+        window.directionsMap = map;
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        
+        // Add markers
+        const userMarker = L.marker([userLat, userLng], { icon: userIcon }).addTo(map).bindPopup("Your Location");
+        const shopMarker = L.marker([shopLat, shopLng], { icon: shopIcon }).addTo(map).bindPopup(shopName);
+
+        // Draw a simple polyline (trial line)
+        const path = [
+            [userLat, userLng],
+            [shopLat, shopLng]
+        ];
+        const trialPolyline = L.polyline(path, {
+            color: '#888888',
+            weight: 2,
+            opacity: 0.5,
+            dashArray: '5, 5'
+        }).addTo(map);
+
+        // Configure routing control for a single route with mode selection
+        let currentMode = 'driving'; // Default mode
+        const control = L.Routing.control({
+            waypoints: [
+                L.latLng(userLat, userLng),
+                L.latLng(shopLat, shopLng)
+            ],
+            router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1',
+                profile: currentMode // 'driving' or 'foot' (walking)
+            }),
+            routeWhileDragging: false,
+            showAlternatives: false, // Disable alternatives to avoid "Option 1"
+            collapsible: false,
+            addWaypoints: false,
+            draggableWaypoints: false,
+            fitSelectedRoutes: true,
+            show: false,
+            lineOptions: {
+                styles: [
+                    { color: '#4a6bff', opacity: 0.8, weight: 6, className: 'animated-route' }
+                ]
+            },
+            formatter: new L.Routing.Formatter({ language: 'en', units: 'metric' }),
+            createMarker: function() { return null; }
+        }).addTo(map);
+
+        // Add mode toggle buttons with fixed data
+        const optionsTabs = document.getElementById('route-options-tabs');
+        optionsTabs.innerHTML = `
+            <button class="btn btn-outline-primary ${currentMode === 'driving' ? 'active' : ''}" data-mode="driving">Drive</button>
+            <button class="btn btn-outline-primary ${currentMode === 'foot' ? 'active' : ''}" data-mode="foot">Walk</button>
+        `;
+
+        optionsTabs.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                optionsTabs.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentMode = this.dataset.mode;
+                // Reinitialize router and force route recalculation
+                control.setRouter(L.Routing.osrmv1({
+                    serviceUrl: 'https://router.project-osrm.org/route/v1',
+                    profile: currentMode
+                }));
+                control.route(); // Ensure route is recalculated
+                // Update summary to reflect mode change without recalculating distance/time
+                const summaryEl = document.getElementById('directions-summary');
+                if (summaryEl) {
+                    const [name, distance, time] = summaryEl.textContent.split(' - ');
+                    summaryEl.textContent = `${name} - ${distance}, ${time} (${currentMode.charAt(0).toUpperCase() + currentMode.slice(1)})`;
+                }
+                // Keep instructions static (no recalculation)
+                const instructionsPanel = document.getElementById('directions-instructions');
+                if (instructionsPanel) {
+                    const existingHtml = instructionsPanel.innerHTML;
+                    instructionsPanel.innerHTML = existingHtml; // Preserve current instructions
+                }
+            });
+        });
+
+        control.on('routesfound', function(e) {
+            const routes = e.routes;
+            const instructionsPanel = document.getElementById('directions-instructions');
+            const summaryEl = document.getElementById('directions-summary');
+            
+            const primaryRoute = routes[0];
+            summaryEl.textContent = `${shopName} - ${(primaryRoute.summary.totalDistance / 1000).toFixed(1)} km, ${Math.round(primaryRoute.summary.totalTime / 60)} min (${currentMode.charAt(0).toUpperCase() + currentMode.slice(1)})`;
+            
+            showRouteInstructions(primaryRoute, shopName);
+        });
+        
+        control.on('routingerror', function(e) {
+            document.getElementById('directions-instructions').innerHTML = `
+                <div class="alert alert-warning">Could not calculate route: ${e.message}</div>
+                <a href="https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${shopLat},${shopLng}" 
+                   target="_blank" class="btn btn-sm btn-outline-danger mt-2">
+                    <i class="ri-google-fill me-1"></i> Open in Google Maps
+                </a>
+            `;
+        });
+    }
+
+    function animatePolyline(polyline) {
+        const latLngs = polyline.getLatLngs();
+        const totalLength = polyline.getLatLngs().length;
+        let index = 0;
+
+        const interval = setInterval(() => {
+            if (index < totalLength) {
+                const subPath = latLngs.slice(0, index + 1);
+                polyline.setLatLngs(subPath);
+                index++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 50); // Adjust speed by changing the interval (e.g., 50ms)
+    }
+
+    function showRouteInstructions(route, shopName) {
+        const instructionsPanel = document.getElementById('directions-instructions');
+        let html = `
+            <div class="alert alert-info mb-3">
+                <div class="d-flex justify-content-between">
+                    <div><strong>Distance:</strong> ${(route.summary.totalDistance / 1000).toFixed(1)} km</div>
+                    <div><strong>Time:</strong> ${Math.round(route.summary.totalTime / 60)} min</div>
+                </div>
+            </div>
+            <div class="route-steps">
+        `;
+        
+        route.instructions.forEach(instruction => {
+            html += `
+                <div class="route-step d-flex align-items-start mb-2">
+                    <div class="me-3 text-muted" style="width: 60px;">${instruction.distance} m</div>
+                    <div class="flex-grow-1">${instruction.text}</div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+        instructionsPanel.innerHTML = html;
+    }
+
+    function showLocationErrorModal(message, shopLat, shopLng, shopName) {
+        if (!document.getElementById('locationErrorModal')) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div class="modal fade" id="locationErrorModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Get Directions</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-warning mb-3">${message}</div>
+                                <p>Enter your location manually:</p>
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="manualLocationInput" placeholder="Enter your address">
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary flex-grow-1" id="useCurrentLocationBtn">
+                                        <i class="ri-refresh-line me-1"></i> Try Again
+                                    </button>
+                                    <button class="btn btn-outline-secondary flex-grow-1" id="openExternalMapsBtn">
+                                        <i class="ri-map-pin-line me-1"></i> External Maps
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('locationErrorModal'));
+        modal.show();
+        
+        document.getElementById('useCurrentLocationBtn')?.addEventListener('click', function() {
+            modal.hide();
+            getDirectionsBtn.click();
+        });
+        
+        document.getElementById('openExternalMapsBtn')?.addEventListener('click', function() {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${shopLat},${shopLng}`, '_blank');
+            modal.hide();
+        });
+        
+        document.getElementById('manualLocationInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const address = encodeURIComponent(this.value);
+                window.open(`https://www.google.com/maps/dir/${address}/${shopLat},${shopLng}`, '_blank');
+                modal.hide();
+            }
+        });
+    }
+});
 </script>
-
-<!-- Toast Notification -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-  <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
-    <div class="d-flex">
-      <div class="toast-body" id="toastBody">Success message</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-
-<style>
-    .product-image-container {
-        padding: 15px;
-        text-align: center;
-    }
-    .product-image-container img {
-        max-height: 400px;
-        width: 100%;
-        object-fit: contain;
-    }
-    .img-thumbnail {
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .img-thumbnail:hover {
-        border-color: #4a6bff;
-        transform: scale(1.05);
-    }
-    .product-thumbnail.active {
-        border-color: #4a6bff;
-        box-shadow: 0 0 0 0.25rem rgba(74, 107, 255, 0.25);
-    }
-    .card {
-        border-radius: 8px;
-        border: 1px solid #f0f0f0;
-    }
-    .card-header {
-        background-color: #fff;
-        border-bottom: 1px solid #f0f0f0;
-    }
-</style>
 {% endblock %}
